@@ -11,7 +11,7 @@ namespace HonestyDotNet.Monads.Tests
         {
             var hw = "Hello World";
             var o1 = Optional.Try(() => hw);
-            var o2 = Optional.Try<string>(() => { throw new Exception(); });
+            var o2 = Optional<string>.None;
 
             var ol1 =   from s in o1 
                         select s.Length;
@@ -31,7 +31,7 @@ namespace HonestyDotNet.Monads.Tests
             var w = "World!";
             var oh = Optional.Try(() => h);
             var ow = Optional.Try(() => w);
-            var ox = Optional.Try<string>(() => { throw new Exception(); });
+            var ox = Optional<string>.None;
 
             var ohw =   from s1 in oh
                         from s2 in ow
@@ -53,7 +53,7 @@ namespace HonestyDotNet.Monads.Tests
             var f = 5;
             var oh = Optional.Try(() => h);
             var of = Optional.Try(() => f);
-            var ox = Optional.Try<string>(() => { throw new Exception(); });
+            var ox = Optional<string>.None;
 
             var ohw =   from s in oh
                         from i in of

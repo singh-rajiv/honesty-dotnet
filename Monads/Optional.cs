@@ -78,7 +78,6 @@ namespace HonestyDotNet.Monads
         public async Task Match(Func<T, Task> whenSome, Func<Task> whenNone)
             => await (IsSome ? whenSome(Value) : whenNone());
 
-
         public async Task<TResult> Match<TResult> (Func<T, Task<TResult>> whenSome, Func<Task<TResult>> whenNone) 
             => IsSome ?  await whenSome(Value) : await whenNone();
 
@@ -126,6 +125,20 @@ namespace HonestyDotNet.Monads
             }
         }
 
+        public static async Task<Optional<T>> Try<T>(Func<Task<T>> f)
+        {
+            try
+            {
+                return await f();
+            }
+            catch
+            {
+                return Optional<T>.None;
+            }
+        }        
+
         public static Optional<T2> Try<T1, T2>(Func<T1, T2> f, T1 val) => Try(() => f(val));
+
+        public static async Task<Optional<T2>> Try<T1, T2>(Func<T1, Task<T2>> f, T1 val) => await Try(() => f(val));
     }
 }
