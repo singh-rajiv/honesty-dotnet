@@ -71,14 +71,24 @@ namespace HonestyDotNet.Monads.Tests
         [Fact]
         public async Task Optional_SelectAsync()
         {
-            var o1 = 10.ToOptional();
-            async Task<string> ComputeString(int x) => await Task.Run(() => { return x.ToString(); });
+            var sHello = "Hello";
+            string sNull = null;
+
+            async Task<int> AsyncCodeOf(string i) => await Task.Run(() 
+                => { return (int) Math.Sqrt(i.GetHashCode()); });
+
+            async Task<int> AsyncSquare(int i) => await Task.Run(() => { return i * i; });
             
-            var r1 = await (from v in o1
-                     select ComputeString(v));
+            var r1 = await 
+                    (from v in await Optional.Try(AsyncCodeOf, sHello)
+                     select AsyncSquare(v));
+
+            var r2 = await 
+                    (from v in await Optional.Try(AsyncCodeOf, sNull)
+                     select AsyncSquare(v));                     
             
             Assert.True(r1.IsSome);
-            Assert.Equal("10", r1.Value);
+            Assert.False(r2.IsSome);
         }
 
         [Fact]
