@@ -1,3 +1,4 @@
+#pragma warning disable CS8848
 using System;
 using System.Threading.Tasks;
 using System.Linq;
@@ -73,24 +74,29 @@ namespace HonestyDotNet.Monads.Tests
             
             async Task<int> AsyncCodeOf(string s) => await Task.Run(() 
                 => { return (int) Math.Sqrt(s.GetHashCode()); });
-            
-            async Task<int> AsyncSquare(int i) => await Task.Run(() => { return i * i; });
-            
+
             var r1 = await 
-                    (from v in await Error.Try(AsyncCodeOf, sHello)
-                     select AsyncSquare(v));
+                     from errOrVal in Error.Try(AsyncCodeOf, sHello)
+                     select
+                     (
+                         from val in errOrVal
+                         select val * val
+                     );
+            Assert.True(r1.IsValue);
 
             var r2 = await 
-                    (from v in await Error.Try(AsyncCodeOf, sNull)
-                     select AsyncSquare(v));
-            
-            Assert.True(r1.IsValue);
+                     from errOrVal in Error.Try(AsyncCodeOf, sNull)
+                     select
+                     (
+                         from val in errOrVal
+                         select val * val
+                     );
             Assert.False(r2.IsValue);
             Assert.NotNull(r2.Ex);
-        }
+        }        
 
         [Fact]
-        public async Task Error_SelectManyAsyc()
+        public async Task Error_SelectManyAsync()
         {
             var sHello = "Hello";
             var sWorld = "World";
@@ -99,17 +105,32 @@ namespace HonestyDotNet.Monads.Tests
             async Task<int> AsyncCodeOf(string s) => await Task.Run(() 
                 => { return (int) Math.Sqrt(s.GetHashCode()); });
             
-            async Task<int> AsyncSum(params int[] args) => await Task.Run(() => { return args.Sum(); });
-
             var r1 = await
-                     (from v1 in await Error.Try(AsyncCodeOf, sHello)
-                      from v2 in       Error.Try(AsyncCodeOf, sWorld)
-                      select AsyncSum(v1, v2));
+                     from errOrVal1 in Error.Try(AsyncCodeOf, sHello)
+                     from errOrVal2 in Error.Try(AsyncCodeOf, sWorld)
+                     from errOrVal3 in Error.Try(AsyncCodeOf, sHello + sWorld)
+                     select
+                     (
+                         from val1 in errOrVal1
+                         from val2 in errOrVal2
+                         from val3 in errOrVal3
+                         select val1 + val2 + val3
+                     );
+            Assert.True(r1.IsValue);
 
             var r2 = await
-                     (from v1 in await Error.Try(AsyncCodeOf, sHello)
-                      from v2 in       Error.Try(AsyncCodeOf, sNull)
-                      select AsyncSum(v1, v2));
-        }
+                     from errOrVal1 in Error.Try(AsyncCodeOf, sHello)
+                     from errOrVal2 in Error.Try(AsyncCodeOf, sNull)
+                     from errOrVal3 in Error.Try(AsyncCodeOf, sHello + sWorld)
+                     select
+                     (
+                         from val1 in errOrVal1
+                         from val2 in errOrVal2
+                         from val3 in errOrVal3
+                         select val1 + val2 + val3
+                     );
+            Assert.False(r2.IsValue);
+            Assert.NotNull(r2.Ex);
+        }        
     }
 }
