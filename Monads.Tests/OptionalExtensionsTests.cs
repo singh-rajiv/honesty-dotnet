@@ -30,10 +30,15 @@ namespace HonestyDotNet.Monads.Tests
         public void Optional_Flatten()
         {
             var oo1 = Optional.Some(Optional.Some(60));
+            var oo2 = Optional.None(Optional.Some(60));
+
             var o1 = oo1.Flatten();
             Assert.True(o1.IsSome);
             Assert.Equal(o1.GetType(), oo1.Value.GetType());
             Assert.Equal(60, o1.Value);
+
+            var o2 = oo2.Flatten();
+            Assert.False(o2.IsSome);
         }
 
         [Fact]

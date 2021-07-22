@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace HonestyDotNet.Monads
 {
     /// <summary>
-    /// Represents an amplified (Optional) T where a value may or may not be present.
+    /// Represents an amplified (Optional) T in which a value may or may not be present.
     /// </summary>
     /// <typeparam name="T">The type to amplify.</typeparam>
     public class Optional<T> : IEquatable<Optional<T>>
@@ -140,7 +140,7 @@ namespace HonestyDotNet.Monads
         /// <summary>
         /// Executes an action on Value asynchronously if Value is present.
         /// </summary>
-        /// <param name="whenSome">The asynchronous task returning func to execute.</param>
+        /// <param name="whenSome">Asynchronous action to execute on Value, if present.</param>
         /// <returns>
         /// Task representing asynchronous completion of the given action. 
         /// A Task.CompletedTask is returned when Value is not present.
@@ -168,7 +168,7 @@ namespace HonestyDotNet.Monads
             => IsSome ?  await whenSome(Value) : await whenNone();
 
         /// <summary>
-        /// Projects the Value, if present, using the supplied func potentially changing the type.
+        /// Projects the Value, if present, using the supplied func which returns a TResult.
         /// </summary>
         /// <typeparam name="TResult">The type of the result of projection operation.</typeparam>
         /// <param name="f">The func which operates on Value.</param>
@@ -177,10 +177,10 @@ namespace HonestyDotNet.Monads
         /// The Optional is None if Value is not present.
         /// </returns>
         public Optional<TResult> Map<TResult>(Func<T, TResult> f) 
-            => IsSome ?  f(Value) : Optional<TResult>.None;
+            => IsSome ? Optional.Try(f, Value) : Optional<TResult>.None;
 
         /// <summary>
-        /// Projects the Value, if present, using the supplied asynchronous func potentially changing the type..
+        /// Projects the Value, if present, using the supplied asynchronous func which returns a Task<TResult>.
         /// </summary>
         /// <typeparam name="TResult">The type of the result yielded by the asynchronous projection operation.</typeparam>
         /// <param name="f">The func which operates on Value asynchronously.</param>
@@ -189,27 +189,27 @@ namespace HonestyDotNet.Monads
         /// The Optional is None if Value is not present.
         /// </returns>
         public async Task<Optional<TResult>> Map<TResult>(Func<T, Task<TResult>> f) 
-            => IsSome ? await f(Value) : Optional<TResult>.None;
+            => IsSome ? await Optional.Try(f, Value) : Optional<TResult>.None;
 
         /// <summary>
-        /// Projects the Value, if present, using the supplied Optional returning func potentially changing the type. 
-        /// Bind automatically flattens the result. Calling Map using the func will return an Optional of Optional of TResult.
+        /// Projects the Value, if present, using the supplied func which returns an Optional<TResult>.
+        /// Bind automatically flattens the result. Calling Map using the func will return an Optional<Optional<TResult>>.
         /// </summary>
         /// <typeparam name="TResult">The type of the raw value of the projection operation.</typeparam>
-        /// <param name="f">The Optional returning func which operates on Value.</param>
+        /// <param name="f">The func which operates on Value.</param>
         /// <returns>The result of the projection operation as an Optional. The Optional is None if Value is not present.</returns>
         public Optional<TResult> Bind<TResult>(Func<T, Optional<TResult>> f)
-            => IsSome ? f(Value) : Optional<TResult>.None;
+            => IsSome ? Optional.Try(f, Value).Flatten() : Optional<TResult>.None;
 
         /// <summary>
-        /// Projects the Value, if present, using the supplied Optional returning asynchronous func potentially changing the type. 
-        /// Bind automatically flattens the result. Calling Map using the func will return an Optional of Optional of TResult.
+        /// Projects the Value, if present, using the supplied asynchronous func which returns a Task<Optional<TResult>>.
+        /// Bind automatically flattens the result. Calling Map using the func will return an Task<Optional<Optional<<TResult>>>.
         /// </summary>
         /// <typeparam name="TResult">The type of the raw value of the projection operation.</typeparam>
-        /// <param name="f">The Optional returning asynchronous func which operates on Value.</param>
+        /// <param name="f">The asynchronous func which operates on Value.</param>
         /// <returns>The result of the projection operation as an Optional. The Optional is None if Value is not present.</returns>
         public async Task<Optional<TResult>> Bind<TResult>(Func<T, Task<Optional<TResult>>> f) =>
-            IsSome ? await f(Value) : Optional<TResult>.None;
+            IsSome ? (await Optional.Try(f, Value)).Flatten() : Optional<TResult>.None;
 
         /// <summary>
         /// Executes a predicate on the Value if present.
@@ -217,7 +217,7 @@ namespace HonestyDotNet.Monads
         /// <param name="predicate">FIlter condition to execute.</param>
         /// <returns>Same instance of this Optional if Value meets the filter condition, None otherwise.</returns>
         public Optional<T> Where(Func<T, bool> predicate) 
-            => IsSome && predicate(Value) ? this : None;
+            => IsSome && Optional.Try(predicate, Value).Match(v => v, () => false) ? this : None;
 
         /// <summary>
         /// Executes a predicate asynchronously on the Value if present.
@@ -225,7 +225,7 @@ namespace HonestyDotNet.Monads
         /// <param name="predicate">Asynchronous filter condition to execute.</param>
         /// <returns>Task yielding same instance of this Optional if Value meets the filter condition, None otherwise.</returns>
         public async Task<Optional<T>> Where(Func<T, Task<bool>> predicate)
-            => IsSome && await predicate(Value) ? this : None;
+            => IsSome && (await Optional.Try(predicate, Value)).Match(v => v, () => false) ? this : None;
 
         /// <summary>
         /// Defaults an Optional to contain the specified value if it does not contain Value.
@@ -237,9 +237,12 @@ namespace HonestyDotNet.Monads
         /// <summary>
         /// Defaults an Optional to contain the result of the specified func evaluation lazily.
         /// </summary>
-        /// <param name="f">func to execute only if Value is not present.</param>
-        /// <returns>Same instance of this Optional if it contains Value. Otherwise an Optional containing the result of func evaluation.</returns>
-        public Optional<T> DefaultIfNone(Func<T> f) => IsSome ? this : f();
+        /// <param name="f">func which provides the default value. It is executed only if Value is not present.</param>
+        /// <returns>
+        /// Same instance of this Optional if it contains Value. Otherwise an Optional containing the result of func evaluation.
+        /// If the func throws an exception then the Optional contains None.
+        /// </returns>
+        public Optional<T> DefaultIfNone(Func<T> f) => IsSome ? this : Optional.Try(f);
 
         /// <summary>
         /// Defaults an Optional to contain the result of the specified func evaluation lazily and asynchronously.
@@ -250,11 +253,11 @@ namespace HonestyDotNet.Monads
         /// Otherwise a Task yielding Optional containing the result of func evaluation.
         /// </returns>
         public async Task<Optional<T>> DefaultIfNone(Func<Task<T>> f)
-            => IsSome ? this : await f();
+            => IsSome ? this : await Optional.Try(f);
     }
 
     /// <summary>
-    /// Static class providing utility methods to create an Optional from an object or function call.
+    /// Static class providing utility methods to create an instance of Optional<T>.
     /// </summary>
     public static class Optional
     {

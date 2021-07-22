@@ -14,7 +14,7 @@ namespace HonestyDotNet.Monads.Tests
             var hw = "Hello World";
             var ex = new Exception("Something happened");
             var e1 = Error.Value(hw);
-            var e2 = Error.Ex<string>(ex);
+            var e2 = Error.Exception<string>(ex);
 
             var l1 = from s in e1 
                      select s.Length;
@@ -25,7 +25,7 @@ namespace HonestyDotNet.Monads.Tests
             Assert.True(l1.IsValue);
             Assert.Equal(hw.Length, l1.Value);
             Assert.False(l2.IsValue);
-            Assert.Equal(ex, l2.Ex);
+            Assert.Equal(ex, l2.Exception);
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace HonestyDotNet.Monads.Tests
             var ex = new Exception("Something happened");
             var e1 = Error.Value(h);
             var e2 = Error.Value(w);
-            var e3 = Error.Ex<string>(ex);
+            var e3 = Error.Exception<string>(ex);
 
             var e4 = from s1 in e1
                      from s2 in e2
@@ -59,9 +59,9 @@ namespace HonestyDotNet.Monads.Tests
             Assert.True(e4.IsValue);
             Assert.Equal(h + w, e4.Value);
             Assert.False(e5.IsValue);
-            Assert.Equal(ex, e5.Ex);
+            Assert.Equal(ex, e5.Exception);
             Assert.False(e6.IsValue);
-            Assert.Equal(ex, e6.Ex);
+            Assert.Equal(ex, e6.Exception);
             Assert.True(e7.IsValue);
             Assert.Equal(30, e7.Value);
         }
@@ -92,7 +92,7 @@ namespace HonestyDotNet.Monads.Tests
                          select val * val
                      );
             Assert.False(r2.IsValue);
-            Assert.NotNull(r2.Ex);
+            Assert.NotNull(r2.Exception);
         }        
 
         [Fact]
@@ -130,7 +130,7 @@ namespace HonestyDotNet.Monads.Tests
                          select val1 + val2 + val3
                      );
             Assert.False(r2.IsValue);
-            Assert.NotNull(r2.Ex);
+            Assert.NotNull(r2.Exception);
         }        
     }
 }

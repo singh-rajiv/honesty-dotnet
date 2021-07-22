@@ -37,6 +37,6 @@ namespace HonestyDotNet.Monads
         /// <typeparam name="T">Type of contained value.</typeparam>
         /// <param name="oo">Optional of an Optional.</param>
         /// <returns>Inner Optional.</returns>
-        public static Optional<T> Flatten<T>(this Optional<Optional<T>> oo) => oo.Bind(o => o);
+        public static Optional<T> Flatten<T>(this Optional<Optional<T>> oo) => oo.IsSome ? oo.Value : Optional<T>.None;
     }
 }
