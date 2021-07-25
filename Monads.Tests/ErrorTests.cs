@@ -9,15 +9,23 @@ namespace HonestyDotNet.Monads.Tests
         [Fact]
         public void Error_Ctor()
         {
+            string emptyString = string.Empty;
+            string nullString = null;
             var ex = new Exception("Something happened");
             var e1 = new Error<int>(5);
             var e2 = new Error<int>(ex);
+            var e3 = new Error<string>(emptyString);
+            var e4 = new Error<string>(nullString);
 
             Assert.True(e1.IsValue);
             Assert.Null(e1.Exception);
             Assert.False(e2.IsValue);
             Assert.NotNull(e2.Exception);
             Assert.Equal(ex, e2.Exception);
+            Assert.True(e3.IsValue);
+            Assert.Null(e3.Exception);
+            Assert.False(e4.IsValue);
+            Assert.IsType<ArgumentNullException>(e4.Exception);
         }
 
         [Fact]

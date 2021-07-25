@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 namespace HonestyDotNet.Monads
 {
     /// <summary>
-    /// Represents an amplified (Error) T in which an Exception instead of a Value may be present.
+    /// Represents an amplified type of T, Error monad, in which an exception instead of a value may be present.
     /// </summary>
-    /// <typeparam name="T">The type of Value.</typeparam>
+    /// <typeparam name="T">The type of value.</typeparam>
     public class Error<T>
     {
         /// <summary>
@@ -16,9 +16,9 @@ namespace HonestyDotNet.Monads
         public Exception Exception { get; }
 
         /// <summary>
-        /// Get the value contained inside. The value is default(T) if there is an Exception present. 
+        /// Returns the value stored inside the monad. The value is default(T) if there is an Exception present. 
         /// </summary>
-        public T Value { get; }
+        public T Value { get; } = default;
 
         /// <summary>
         /// Returns true if Value is present, false if Exception is present.
@@ -26,27 +26,32 @@ namespace HonestyDotNet.Monads
         public bool IsValue { get; }
 
         /// <summary>
-        /// Creates an instance of Error<T> containing value.
+        /// Creates an instance of Error monad containing value.
         /// </summary>
-        /// <param name="value">Value to store inside the instance.</param>
+        /// <param name="value">Value to store inside the instance. If it is null then Exception property is set to ArgumentNullException.</param>
         public Error(T value)
         {
-            Value = value;
-            IsValue = true;
+            if (value == null)
+                Exception = new ArgumentNullException(nameof(value));
+            else
+            {
+                Value = value;
+                IsValue = true;
+            }
         }
 
         /// <summary>
-        /// Creates an instance of Error<T> containing Exception.
+        /// Creates an instance of Error monad containing Exception.
         /// </summary>
-        /// <param name="ex">Exception to store inside the instance.</param>
+        /// <param name="ex">Exception to store inside the instance. If it is null then Exception property is set to ArgumentNullException.</param>
         public Error(Exception ex)
         {
-            Exception = ex;
+            Exception = ex ?? new ArgumentNullException(nameof(ex));
             IsValue = false;
-        }        
+        }
 
         /// <summary>
-        /// Executes one of the given actions.
+        /// Executes one of the given actions based on whether a value is present.
         /// </summary>
         /// <param name="whenValue">Action to execute on Value, if present.</param>
         /// <param name="whenEx">Action to execute on Exception, if present.</param>
@@ -59,7 +64,7 @@ namespace HonestyDotNet.Monads
         }
 
         /// <summary>
-        /// Executes one of the given actions asynchronously.
+        /// Executes one of the given actions asynchronously based on whether a value is present.
         /// </summary>
         /// <param name="whenValue">Asynchronous action to execute on Value, if present.</param>
         /// <param name="whenEx">Asynchronous action to execute on Exception, if present.</param>
@@ -68,7 +73,7 @@ namespace HonestyDotNet.Monads
             => await (IsValue ? whenValue(Value) : whenEx(Exception));
         
         /// <summary>
-        /// Executes one of the given funcs and returns its result.
+        /// Executes one of the given funcs based on whether a value is present and returns its result.
         /// </summary>
         /// <typeparam name="TResult">Type of the result.</typeparam>
         /// <param name="whenValue">Func to execute on Value, if present.</param>
@@ -78,7 +83,7 @@ namespace HonestyDotNet.Monads
             => IsValue ? whenValue(Value) : whenEx(Exception);
 
         /// <summary>
-        /// Executed one of the given asynchronous funcs and returns the task which will eventually yield a result.
+        /// Executes one of the given asynchronous funcs based on whether a value is present and returns the task which will eventually yield a result.
         /// </summary>
         /// <typeparam name="TResult">Type of the result.</typeparam>
         /// <param name="whenValue">Asynchronous func to execute on Value, if present.</param>
@@ -88,118 +93,130 @@ namespace HonestyDotNet.Monads
             => IsValue ?  await whenValue(Value) : await whenEx(Exception);
 
         /// <summary>
-        /// Projects the Value, if present, using the supplied func which returns a TResult.
+        /// Projects the Value, if present, using the supplied func.
         /// </summary>
         /// <typeparam name="TResult">The type of the result of projection operation.</typeparam>
         /// <param name="f">The func which operates on Value. It is executed inside a try/catch block.</param>
         /// <returns>
-        /// The result of the projection operation as Error<TResult>. 
-        /// If this object contains an exception then the result also contains the same exception.
+        /// The result of the projection operation as an Error. 
+        /// If the object contains an exception then the result also contains the same exception.
+        /// If the func is null then the result contains ArgumentNullException.
         /// If the func throws an exception then the result contains that exception.
         /// </returns>
         public Error<TResult> Map<TResult>(Func<T, TResult> f)
             => IsValue ? Error.Try(f, Value) : new (Exception);
 
         /// <summary>
-        /// Projects the Value, if present, using the supplied asynchronous func which returns a Task<TResult>.
+        /// Projects the Value, if present, using the supplied asynchronous func.
         /// </summary>
         /// <typeparam name="TResult">The type of the result of projection operation.</typeparam>
         /// <param name="f">The func which operates on Value asynchronously.</param>
         /// <returns>
-        /// Task which yields the result of the projection operation as Error<TResult>. 
-        /// If this object contains an exception then the result also contains the same exception.
+        /// Task which yields the result of the projection operation as an Error. 
+        /// If the object contains an exception then the result also contains the same exception.
+        /// If the func is null then the result contains ArgumentNullException.
         /// If the func throws an exception then the result contains that exception.
-        /// If the task gets canceled then the result contains OperationCancelledException.
+        /// If the task gets cancelled then the result contains OperationCancelledException.
         /// </returns>
         public async Task<Error<TResult>> Map<TResult>(Func<T, Task<TResult>> f)
             => IsValue ? await Error.Try(f, Value) : new (Exception);
 
         /// <summary>
-        /// Projects the Value, if present, using the supplied func which returns an Error<TResult>.
-        /// Bind flattens the result. Calling Map using the func will return an Error<Error<TResult>>.
+        /// Projects the Value, if present, using the supplied func which also returns an Error.
+        /// Bind flattens the result. Calling Map using the func will return an Error of an Error.
         /// </summary>
         /// <typeparam name="TResult">The type of the raw value of the projection operation.</typeparam>
         /// <param name="f">The func which operates on Value.</param>
         /// <returns>
-        /// The result of the projection operation as an Error<TResult>.
-        /// If this object contains an exception then the result also contains the same exception.
+        /// The result of the projection operation as an Error.
+        /// If the object contains an exception then the result also contains the same exception.
+        /// If the func is null then the result contains ArgumentNullException.
         /// If the func throws an exception then the result contains that exception.
         /// </returns>
         public Error<TResult> Bind<TResult>(Func<T, Error<TResult>> f)
             => IsValue ? Error.Try(f, Value).Flatten() : new (Exception);
 
         /// <summary>
-        /// Projects the Value, if present, using the supplied asynchronous func which returns a Task<Error<TResult>>.
+        /// Projects the Value, if present, using the supplied asynchronous func.
         /// </summary>
         /// <typeparam name="TResult">The type of the result of projection operation.</typeparam>
         /// <param name="f">The func which operates on Value asynchronously.</param>
         /// <returns>
-        /// Task which yields the result of the projection operation as Error<TResult>. 
-        /// If this object contains an exception then the result also contains the same exception.
+        /// Task which yields the result of the projection operation as an Error. 
+        /// If the object contains an exception then the result also contains the same exception.
+        /// If the func is null then the result contains ArgumentNullException.
         /// If the func throws an exception then the result contains that exception.
-        /// If the task gets canceled then the result contains OperationCancelledException.
+        /// If the task gets cancelled then the result contains OperationCancelledException.
         /// </returns>
         public async Task<Error<TResult>> Bind<TResult>(Func<T, Task<Error<TResult>>> f)
             => IsValue ? (await Error.Try(f, Value)).Flatten() : new (Exception);
 
         /// <summary>
-        /// Defaults an Error<T> to contain the specified value, if it contains an exception.
+        /// Defaults an Error to contain the specified value, if it contains an exception.
         /// </summary>
         /// <param name="val">Default value.</param>
-        /// <returns>Same instance of the object if it contains a value. Otherwise a new object containing the specified default value.</returns>
+        /// <returns>Same instance of the Error if it contains a value. Otherwise a new Error containing the specified default value.</returns>
         public Error<T> DefaultIfException(T val) => IsValue ? this : new (val);
 
         /// <summary>
-        /// Defaults an Error<T> to contain a value computed lazily at runtime, if it contains an exception.
+        /// Defaults an Error to contain a value computed lazily at runtime, if it contains an exception.
         /// </summary>
         /// <param name="f">func which provides the default value. It is executed only if Value is not present.</param>
         /// <returns>
-        /// Same instance of this object if it contains Value. Otherwise a new object containing the result of func evaluation.
+        /// Same instance of the Error if it contains Value. Otherwise a new Error containing the result of func evaluation.
+        /// If the func is null then the result contains ArgumentNullException.
         /// If the func throws an exception then the object contains that exception.
         /// </returns>
         public Error<T> DefaultIfException(Func<T> f) => IsValue ? this : Error.Try(f);
 
         /// <summary>
-        /// Defaults an Error<T> to contain a value computed lazily and asynchronously at runtime, if it contains an exception.
+        /// Defaults an Error to contain a value computed lazily and asynchronously at runtime, if it contains an exception.
         /// </summary>
         /// <param name="f">func which provides the default value asynchronously. It is executed only if Value is not present.</param>
         /// <returns>
-        /// Task which yields the same instance of this object if it contains Value. Otherwise value provided by the func as Error<TResult>. 
+        /// Task which yields the same instance of the Error if it contains Value. Otherwise value provided by the func as Error. 
         /// If the func throws an exception then the result contains that exception.
-        /// If the task gets canceled then the result contains OperationCancelledException.
+        /// If the func is null then the result contains ArgumentNullException.
+        /// If the task gets cancelled then the result contains OperationCancelledException.
         /// </returns>
         public async Task<Error<T>> DefaultIfException(Func<Task<T>> f) => IsValue ? this : await Error.Try(f);
     }
 
     /// <summary>
-    /// Static class providing utility methods to create an instance of Error<T>.
+    /// Static class providing utility methods to create an instance of Error monad.
     /// </summary>
     public static class Error
     {
         /// <summary>
-        /// Creates an instance of Error<T> from an exception.
+        /// Creates an instance of Error from an exception.
         /// </summary>
         /// <typeparam name="T">Type of T</typeparam>
         /// <param name="ex">Exception object.</param>
-        /// <returns>An Error<T> object which contains the given exception.</returns>
+        /// <returns>An Error object which contains the given exception.</returns>
         public static Error<T> Exception<T>(Exception ex) => new (ex);
 
         /// <summary>
-        /// Creates an instance of Error<T> from a value.
+        /// Creates an instance of Error from a value.
         /// </summary>
         /// <typeparam name="T">Type of value.</typeparam>
         /// <param name="value">Value object.</param>
-        /// <returns>An Error<T> object which contains the given value.</returns>
+        /// <returns>An Error object which contains the given value.</returns>
         public static Error<T> Value<T>(T value) => new (value);
 
         /// <summary>
-        /// Creates an instance of Error<T> by executing a parameterless func which may throw an exception.
+        /// Amplifies the result of a function call to an Error. The function is executed inside a try/catch block.
         /// </summary>
         /// <typeparam name="T">Return type of the func.</typeparam>
-        /// <param name="f">Func which gets executed in a try/catch block. </param>
-        /// <returns>An Error<T> object which contains the func's result or exception thrown by it.</returns>
+        /// <param name="f">Function to execute. </param>
+        /// <returns>
+        /// An Error object which contains the func's result or exception thrown by it.
+        /// If the func is null then it contains ArgumentNullException.
+        /// </returns>
         public static Error<T> Try<T>(Func<T> f)
         {
+            if (f == null)
+                return new (new ArgumentNullException(nameof(f)));
+
             try
             {
                  return new (f());
@@ -211,13 +228,22 @@ namespace HonestyDotNet.Monads
         }
 
         /// <summary>
-        /// Creates an instance of Error<T> by executing a parameterless func asynchronously which may throw an exception.
+        /// Amplifies the result of an asynchronous function call to an Error. 
+        /// The function is executed and resulting task awaited inside a try/catch block.
         /// </summary>
-        /// <typeparam name="T">Type of the result.</typeparam>
-        /// <param name="f">Func which gets executed in a try/catch block. </param>
-        /// <returns>A task object that yields an Error<T> containing the func's result or exception thrown by it.</returns>
+        /// <typeparam name="T">Type of the result yielded by the asynchronous function.</typeparam>
+        /// <param name="f">Asynchronous function to execute.</param>
+        /// <returns>
+        /// A task which yields an Error, which contains the func's result or exception thrown by it. 
+        /// Awaiting the returned task is guaranteed to not fail even if the original task is faulted or cancelled.
+        /// If the func is null then it contains ArgumentNullException.
+        /// If the task gets cancelled then the result contains OperationCancelledException.
+        /// </returns>
         public static async Task<Error<T>> Try<T>(Func<Task<T>> f)
         {
+            if (f == null)
+                return new (new ArgumentNullException(nameof(f)));
+
             try
             {
                  return new (await f());
@@ -229,23 +255,31 @@ namespace HonestyDotNet.Monads
         }
 
         /// <summary>
-        /// Creates an instance of Error<T> by executing a func which takes an input parameter and may throw.
+        /// Amplifies the result of a function call on given value to an Error. The function is executed inside a try/catch block.
         /// </summary>
         /// <typeparam name="T1">Type of input value to the func.</typeparam>
-        /// <typeparam name="T2">Return type of the func.</typeparam>
-        /// <param name="f">Func which gets executed in a try/catch block.</param>
+        /// <typeparam name="T2">Type of value returned by the function.</typeparam>
+        /// <param name="f">Function to execute.</param>
         /// <param name="val">Input parameter to the func.</param>
-        /// <returns>An Error<T> object which contains the func's result or exception thrown by it.</returns>
+        /// <returns>
+        /// An Error containing the result on successful execution or exception thrown by it.
+        /// If the func is null then it contains ArgumentNullException.
+        /// </returns>
         public static Error<T2> Try<T1, T2>(Func<T1, T2> f, T1 val) => Try(() => f(val));
 
         /// <summary>
-        /// Creates an instance of Error<T> by executing an asynchronous func which takes an input parameter and may throw.
+        /// Amplifies the result of an asynchronous function call on given value to an Error. 
+        /// The function is executed and resulting task awaited inside a try/catch block.
         /// </summary>
-        /// <typeparam name="T1">Type of input value to the func.</typeparam>
-        /// <typeparam name="T2">Return type of the func.</typeparam>
-        /// <param name="f">Func which gets executed in a try/catch block.</param>
+        /// <typeparam name="T1">Type of input value to the asynhronous function.</typeparam>
+        /// <typeparam name="T2">Type of the result yielded by the asynchronous function.</typeparam>
+        /// <param name="f">Asynchronous function to execute on value.</param>
         /// <param name="val">Input parameter to the func.</param>
-        /// <returns>A task object that yields an Error<T> containing the func's result or exception thrown by it.</returns>
+        /// <returns>
+        /// A task which yields an Error containing the result on successful execution or exception thrown by it.
+        /// If the func is null then it contains ArgumentNullException.
+        /// If the task gets cancelled then the result contains OperationCancelledException.
+        /// </returns>
         public static async Task<Error<T2>> Try<T1, T2>(Func<T1, Task<T2>> f, T1 val) => await Try(() => f(val));
     }
 }

@@ -4,15 +4,15 @@ using System.Threading.Tasks;
 namespace HonestyDotNet.Monads
 {
     /// <summary>
-    /// Methods in this class have been defined to enable LINQ query syntax on Error monad.
+    /// Methods in this class have been defined to enable LINQ query syntax on Error type.
     /// These methods should not generally be called directly from user code.
-    /// LINQ queries on Error monad will attach to these methods using duck typing.
+    /// LINQ queries on Error type will attach to these methods using duck typing.
     /// </summary>
     public static class ErrorLINQ
     {
         /// <summary>
         /// Not to be called directly. Use Map if using method syntax.
-        /// </summary>        
+        /// </summary>
         public static Error<T2> Select<T1, T2>(this Error<T1> e, Func<T1, T2> f) => e.Map(f);
 
         /// <summary>
