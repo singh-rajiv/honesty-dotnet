@@ -1,7 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <PackageId>HonestyDotNet</PackageId>
+    <Version>0.5.0</Version>
+    <Authors>Rajiv Singh</Authors>
+    <Copyright>Rajiv Singh 2021</Copyright>
+    <PackageDescription>Provides Optional and Error monads.</PackageDescription>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>    
+    <RepositoryUrl>https://github.com/singh-rajiv/honesty-dotnet</RepositoryUrl>
   </PropertyGroup>
-
 </Project>

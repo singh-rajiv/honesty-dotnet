@@ -1,4 +1,4 @@
-name: .NET BUILD and TEST
+name: .NET BUILD, TEST AND PUBLISH
 
 on:
   push:
@@ -23,3 +23,8 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Publish  
+      uses: brandedoutcast/publish-nuget@v2.5.2  
+      with:
+        PROJECT_FILE_PATH: Monads/Monads.csproj  
+        NUGET_KEY: ${{secrets.NUGET_API_KEY}}
