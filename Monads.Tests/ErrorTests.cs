@@ -11,11 +11,13 @@ namespace HonestyDotNet.Monads.Tests
         {
             string emptyString = string.Empty;
             string nullString = null;
+            Exception nullEx = null;
             var ex = new Exception("Something happened");
             var e1 = new Error<int>(5);
             var e2 = new Error<int>(ex);
             var e3 = new Error<string>(emptyString);
             var e4 = new Error<string>(nullString);
+            var e5 = new Error<string>(nullEx);
 
             Assert.True(e1.IsValue);
             Assert.Null(e1.Exception);
@@ -26,6 +28,8 @@ namespace HonestyDotNet.Monads.Tests
             Assert.Null(e3.Exception);
             Assert.False(e4.IsValue);
             Assert.IsType<ArgumentNullException>(e4.Exception);
+            Assert.False(e5.IsValue);
+            Assert.IsType<ArgumentNullException>(e5.Exception);
         }
 
         [Fact]
@@ -304,11 +308,16 @@ namespace HonestyDotNet.Monads.Tests
         {
             static int InvalidOp() => (new [] {10})[2];
             static int LengthOf(string s) => s.Length;
+            Func<int> nullFunc1 = null;
+            Func<string, int> nullFunc2 = null;
+
             var e1 = Error.Try(() => 10);
             var e2 = Error.Try(InvalidOp);
             var e3 = Error.Try(LengthOf, "Hello");
             var e4 = Error.Try(LengthOf, "");
             var e5 = Error.Try<string, int>(LengthOf, null);
+            var e6 = Error.Try(nullFunc1);
+            var e7 = Error.Try(nullFunc2, "Hello");
 
             Assert.True(e1.IsValue);
             Assert.Equal(10, e1.Value);
@@ -319,6 +328,10 @@ namespace HonestyDotNet.Monads.Tests
             Assert.Equal(0, e4.Value);
             Assert.False(e5.IsValue);
             Assert.NotNull(e5.Exception);
+            Assert.False(e6.IsValue);
+            Assert.IsType<ArgumentNullException>(e6.Exception);
+            Assert.False(e7.IsValue);
+            Assert.IsType<NullReferenceException>(e7.Exception);
         }
 
         [Fact]
@@ -328,9 +341,13 @@ namespace HonestyDotNet.Monads.Tests
             static Task<int> LengthOf(string s) => Task.Run(() => s.Length);
             var e1 = await Error.Try(() => Task.FromResult(10));
             var e2 = await Error.Try(InvalidOp);
+            Func<Task<int>> nullFunc1 = null;
+            Func<string, Task<int>> nullFunc2 = null;
             var e3 = await Error.Try(LengthOf, "Hello");
             var e4 = await Error.Try(LengthOf, "");
             var e5 = await Error.Try<string, int>(LengthOf, null);
+            var e6 = await Error.Try(nullFunc1);
+            var e7 = await Error.Try(nullFunc2, "Hello");
 
             Assert.True(e1.IsValue);
             Assert.Equal(10, e1.Value);
@@ -341,6 +358,10 @@ namespace HonestyDotNet.Monads.Tests
             Assert.Equal(0, e4.Value);
             Assert.False(e5.IsValue);
             Assert.NotNull(e5.Exception);
+            Assert.False(e6.IsValue);
+            Assert.IsType<ArgumentNullException>(e6.Exception);
+            Assert.False(e7.IsValue);
+            Assert.IsType<NullReferenceException>(e7.Exception);
         }
     }
 }

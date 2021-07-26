@@ -263,7 +263,7 @@ namespace HonestyDotNet.Monads
         /// <param name="val">Input parameter to the func.</param>
         /// <returns>
         /// An Error containing the result on successful execution or exception thrown by it.
-        /// If the func is null then it contains ArgumentNullException.
+        /// If the func is null then it contains NullReferenceException.
         /// </returns>
         public static Error<T2> Try<T1, T2>(Func<T1, T2> f, T1 val) => Try(() => f(val));
 
@@ -277,7 +277,7 @@ namespace HonestyDotNet.Monads
         /// <param name="val">Input parameter to the func.</param>
         /// <returns>
         /// A task which yields an Error containing the result on successful execution or exception thrown by it.
-        /// If the func is null then it contains ArgumentNullException.
+        /// If the func is null then it contains NullReferenceException.
         /// If the task gets cancelled then the result contains OperationCancelledException.
         /// </returns>
         public static async Task<Error<T2>> Try<T1, T2>(Func<T1, Task<T2>> f, T1 val) => await Try(() => f(val));
