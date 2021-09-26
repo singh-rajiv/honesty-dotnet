@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <PackageId>HonestyDotNet</PackageId>
-    <Version>0.5.0</Version>
+    <Version>0.5.1</Version>
     <Authors>Rajiv Singh</Authors>
     <Copyright>Rajiv Singh 2021</Copyright>
     <PackageDescription>Provides Optional and Error monads.</PackageDescription>
