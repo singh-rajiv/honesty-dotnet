@@ -1,3 +1,4 @@
+#pragma warning disable CS1591
 namespace Monads;
 
 public static class ErrorExtensions
