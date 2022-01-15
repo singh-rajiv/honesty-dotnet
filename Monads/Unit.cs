@@ -1,7 +1,6 @@
-namespace HonestyDotNet.Monads
+namespace Monads;
+
+public struct Unit
 {
-    public struct Unit
-    {
-        
-    }
+
 }
