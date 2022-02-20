@@ -9,7 +9,7 @@ public static class ErrorExtensions
     /// <typeparam name="T">Type of value.</typeparam>
     /// <param name="val">Value to be amplified.</param>
     /// <returns>Error containing the value.</returns>
-    public static Error<T> ToError<T>(this T val) => new(val);
+    public static Error<T> ToError<T>(this T? val) => new(val);
 
     /// <summary>
     /// Amplifies the given exception to an Error.
@@ -26,8 +26,8 @@ public static class ErrorExtensions
     /// <param name="o">Optional to convert.</param>
     /// <param name="ex">Exception to set if the Optional does not contain a value.</param>
     /// <returns>An Error containing the Optional's value if present or the given exception.</returns>
-    public static Error<T> ToError<T>(this Optional<T> o, Exception ex) =>
-        o.Match<Error<T>>(val => new(val), () => new(ex));
+    public static Error<T> ToError<T>(this Optional<T> o, Exception ex) 
+        => o.IsSome ? new(o.Value) : new(ex);
 
     /// <summary>
     /// Unwraps an Error of an Error to just an Error.

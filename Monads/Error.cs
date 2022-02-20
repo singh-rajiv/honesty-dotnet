@@ -9,25 +9,27 @@ public class Error<T>
     /// <summary>
     /// Gets the Exception. Returns null if there is a Value present.
     /// </summary>
-    public Exception Exception { get; }
+    public Exception? Exception { get; }
 
     /// <summary>
     /// Returns the value stored inside the monad. The value is default(T) if there is an Exception present. 
     /// </summary>
-    public T Value { get; } = default;
+    public T? Value { get; } = default;
 
     /// <summary>
     /// Returns true if Value is present, false if Exception is present.
     /// </summary>
+    [MemberNotNullWhen(true, nameof(Value))]
+    [MemberNotNullWhen(false, nameof(Exception))]
     public bool IsValue { get; }
 
     /// <summary>
     /// Creates an instance of Error monad containing value.
     /// </summary>
     /// <param name="value">Value to store inside the instance. If it is null then Exception property is set to ArgumentNullException.</param>
-    public Error(T value)
+    public Error(T? value)
     {
-        if (value == null)
+        if (value is null)
             Exception = new ArgumentNullException(nameof(value));
         else
         {
@@ -39,12 +41,8 @@ public class Error<T>
     /// <summary>
     /// Creates an instance of Error monad containing Exception.
     /// </summary>
-    /// <param name="ex">Exception to store inside the instance. If it is null then Exception property is set to ArgumentNullException.</param>
-    public Error(Exception ex)
-    {
-        Exception = ex ?? new ArgumentNullException(nameof(ex));
-        IsValue = false;
-    }
+    /// <param name="ex">Exception to store inside the instance.</param>
+    public Error(Exception ex) => (Exception, IsValue) = (ex, false);
 
     /// <summary>
     /// Executes one of the given actions based on whether a value is present.
@@ -65,8 +63,7 @@ public class Error<T>
     /// <param name="whenValue">Asynchronous action to execute on Value, if present.</param>
     /// <param name="whenEx">Asynchronous action to execute on Exception, if present.</param>
     /// <returns>Task representing the asynchronous action that gets executed.</returns>
-    public async Task Match(Func<T, Task> whenValue, Func<Exception, Task> whenEx)
-        => await (IsValue ? whenValue(Value) : whenEx(Exception));
+    public async Task Match(Func<T, Task> whenValue, Func<Exception, Task> whenEx) => await (IsValue ? whenValue(Value) : whenEx(Exception));
 
     /// <summary>
     /// Executes one of the given funcs based on whether a value is present and returns its result.
@@ -75,7 +72,7 @@ public class Error<T>
     /// <param name="whenValue">Func to execute on Value, if present.</param>
     /// <param name="whenEx">Func to execute on Exception, if present.</param>
     /// <returns>Result of the func that gets executed.</returns>
-    public TResult Match<TResult>(Func<T, TResult> whenValue, Func<Exception, TResult> whenEx)
+    public TResult? Match<TResult>(Func<T, TResult?> whenValue, Func<Exception, TResult?> whenEx)
         => IsValue ? whenValue(Value) : whenEx(Exception);
 
     /// <summary>
@@ -85,7 +82,7 @@ public class Error<T>
     /// <param name="whenValue">Asynchronous func to execute on Value, if present.</param>
     /// <param name="whenEx">Asynchronous func to execute on Exception, if present.</param>
     /// <returns>Task which will yield the result on completion.</returns>
-    public async Task<TResult> Match<TResult>(Func<T, Task<TResult>> whenValue, Func<Exception, Task<TResult>> whenEx)
+    public async Task<TResult?> Match<TResult>(Func<T, Task<TResult?>> whenValue, Func<Exception, Task<TResult?>> whenEx)
         => IsValue ? await whenValue(Value) : await whenEx(Exception);
 
     /// <summary>
@@ -99,8 +96,7 @@ public class Error<T>
     /// If the func is null then the result contains ArgumentNullException.
     /// If the func throws an exception then the result contains that exception.
     /// </returns>
-    public Error<TResult> Map<TResult>(Func<T, TResult> f)
-        => IsValue ? Error.Try(f, Value) : new(Exception);
+    public Error<TResult> Map<TResult>(Func<T, TResult?> f) => IsValue ? Error.Try(f, Value) : new(Exception);
 
     /// <summary>
     /// Projects the Value, if present, using the supplied asynchronous func.
@@ -114,7 +110,7 @@ public class Error<T>
     /// If the func throws an exception then the result contains that exception.
     /// If the task gets cancelled then the result contains OperationCancelledException.
     /// </returns>
-    public async Task<Error<TResult>> Map<TResult>(Func<T, Task<TResult>> f)
+    public async Task<Error<TResult>> Map<TResult>(Func<T, Task<TResult?>> f)
         => IsValue ? await Error.Try(f, Value) : new(Exception);
 
     /// <summary>
@@ -145,7 +141,20 @@ public class Error<T>
     /// If the task gets cancelled then the result contains OperationCancelledException.
     /// </returns>
     public async Task<Error<TResult>> Bind<TResult>(Func<T, Task<Error<TResult>>> f)
-        => IsValue ? (await Error.Try(f, Value)).Flatten() : new(Exception);
+    {
+        if (IsValue)
+        {
+            try
+            {
+                return await f(Value);
+            }
+            catch (Exception ex)
+            {
+                return new(ex);
+            }
+        }
+        return new(Exception);
+    }
 
     /// <summary>
     /// Defaults an Error to contain the specified value, if it contains an exception.
@@ -163,7 +172,7 @@ public class Error<T>
     /// If the func is null then the result contains ArgumentNullException.
     /// If the func throws an exception then the object contains that exception.
     /// </returns>
-    public Error<T> DefaultIfException(Func<T> f) => IsValue ? this : Error.Try(f);
+    public Error<T> DefaultIfException(Func<T?> f) => IsValue ? this : Error.Try(f);
 
     /// <summary>
     /// Defaults an Error to contain a value computed lazily and asynchronously at runtime, if it contains an exception.
@@ -175,7 +184,7 @@ public class Error<T>
     /// If the func is null then the result contains ArgumentNullException.
     /// If the task gets cancelled then the result contains OperationCancelledException.
     /// </returns>
-    public async Task<Error<T>> DefaultIfException(Func<Task<T>> f) => IsValue ? this : await Error.Try(f);
+    public async Task<Error<T>> DefaultIfException(Func<Task<T?>> f) => IsValue ? this : await Error.Try(f);
 }
 
 /// <summary>
@@ -197,7 +206,7 @@ public static class Error
     /// <typeparam name="T">Type of value.</typeparam>
     /// <param name="value">Value object.</param>
     /// <returns>An Error object which contains the given value.</returns>
-    public static Error<T> Value<T>(T value) => new(value);
+    public static Error<T> Value<T>(T? value) => new(value);
 
     /// <summary>
     /// Amplifies the result of a function call to an Error. The function is executed inside a try/catch block.
@@ -208,11 +217,8 @@ public static class Error
     /// An Error object which contains the func's result or exception thrown by it.
     /// If the func is null then it contains ArgumentNullException.
     /// </returns>
-    public static Error<T> Try<T>(Func<T> f)
+    public static Error<T> Try<T>(Func<T?> f)
     {
-        if (f == null)
-            return new(new ArgumentNullException(nameof(f)));
-
         try
         {
             return new(f());
@@ -235,11 +241,8 @@ public static class Error
     /// If the func is null then it contains ArgumentNullException.
     /// If the task gets cancelled then the result contains OperationCancelledException.
     /// </returns>
-    public static async Task<Error<T>> Try<T>(Func<Task<T>> f)
+    public static async Task<Error<T>> Try<T>(Func<Task<T?>> f)
     {
-        if (f == null)
-            return new(new ArgumentNullException(nameof(f)));
-
         try
         {
             return new(await f());
@@ -261,7 +264,7 @@ public static class Error
     /// An Error containing the result on successful execution or exception thrown by it.
     /// If the func is null then it contains NullReferenceException.
     /// </returns>
-    public static Error<T2> Try<T1, T2>(Func<T1, T2> f, T1 val) => Try(() => f(val));
+    public static Error<T2> Try<T1, T2>(Func<T1, T2?> f, T1 val) => Try(() => f(val));
 
     /// <summary>
     /// Amplifies the result of an asynchronous function call on given value to an Error. 
@@ -276,5 +279,5 @@ public static class Error
     /// If the func is null then it contains NullReferenceException.
     /// If the task gets cancelled then the result contains OperationCancelledException.
     /// </returns>
-    public static async Task<Error<T2>> Try<T1, T2>(Func<T1, Task<T2>> f, T1 val) => await Try(() => f(val));
+    public static async Task<Error<T2>> Try<T1, T2>(Func<T1, Task<T2?>> f, T1 val) => await Try(() => f(val));
 }

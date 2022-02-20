@@ -29,8 +29,10 @@ public class OptionalExtensionsTests
         var oo2 = Optional.None(Optional.Some(60));
 
         var o1 = oo1.Flatten();
+
+        Assert.True(oo1.IsSome);
         Assert.True(o1.IsSome);
-        Assert.Equal(o1.GetType(), oo1.Value.GetType());
+        Assert.Equal(o1.GetType(), oo1.Value?.GetType());
         Assert.Equal(60, o1.Value);
 
         var o2 = oo2.Flatten();
@@ -42,7 +44,7 @@ public class OptionalExtensionsTests
     {
         var x = 7;
         var s1 = "Hello";
-        string s2 = null;
+        string? s2 = null;
         var ox = x.ToOptional();
         var os1 = s1.ToOptional();
         var os2 = s2.ToOptional();

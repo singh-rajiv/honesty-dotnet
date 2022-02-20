@@ -47,9 +47,9 @@ public class OptionalLINQTests
     public async Task Optional_SelectAsync()
     {
         var sHello = "Hello";
-        string sNull = null;
+        string? sNull = null;
 
-        async Task<int> AsyncCodeOf(string i) => await Task.Run(() => (int)Math.Sqrt(i.GetHashCode()));
+        async Task<int> AsyncCodeOf(string? i) => await Task.Run(() => (int)Math.Sqrt(i!.GetHashCode()));
 
         var r1 = await
                  from maybeValue in Optional.Try(AsyncCodeOf, sHello)
@@ -75,9 +75,9 @@ public class OptionalLINQTests
     {
         var sHello = "Hello";
         var sWorld = "World";
-        string sNull = null;
+        string? sNull = null;
 
-        async Task<int> AsyncCodeOf(string i) => await Task.Run(() => (int)Math.Sqrt(i.GetHashCode()));
+        async Task<int> AsyncCodeOf(string? i) => await Task.Run(() => (int)Math.Sqrt(i!.GetHashCode()));
 
         var r1 = await
                  from maybeValue1 in Optional.Try(AsyncCodeOf, sHello)

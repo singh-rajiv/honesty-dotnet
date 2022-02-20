@@ -2,12 +2,14 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <PackageId>HonestyDotNet</PackageId>
-    <Version>0.6.1</Version>
+    <Version>0.7.0</Version>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>Rajiv Singh</Authors>
-    <Copyright>Rajiv Singh 2021</Copyright>
+    <Copyright>Rajiv Singh 2022</Copyright>
     <PackageDescription>Provides Optional and Error monads.</PackageDescription>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>    
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/singh-rajiv/honesty-dotnet</RepositoryUrl>
   </PropertyGroup>
 </Project>

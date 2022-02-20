@@ -3,7 +3,7 @@ namespace Monads;
 /// <summary>
 /// Methods in this class have been defined to enable LINQ query syntax on Task type.
 /// These methods should not generally be called directly from user code.
-/// LINQ queries on Error type will attach to these methods using duck typing.
+/// LINQ queries on Task type will attach to these methods using duck typing.
 /// </summary>
 public static class TaskLINQ
 {

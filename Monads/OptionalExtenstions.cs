@@ -9,7 +9,7 @@ public static class OptionalExtensions
     /// <typeparam name="T">Type of value.</typeparam>
     /// <param name="val">Value to be amplified.</param>
     /// <returns>Optional containing the Value.</returns>
-    public static Optional<T> ToOptional<T>(this T val) => val;
+    public static Optional<T> ToOptional<T>(this T? val) => val;
 
     /// <summary>
     /// Creates an Optional by executing a function if boolean value is true.
@@ -21,7 +21,7 @@ public static class OptionalExtensions
     /// Optional containing value returned by function if boolean is true.
     /// The Optional is None if the boolean is false or the function is null or it throws.
     /// </returns>
-    public static Optional<T> IfTrue<T>(this bool b, Func<T> f) => b ? Optional.Try(f) : Optional<T>.None;
+    public static Optional<T> IfTrue<T>(this bool b, Func<T?> f) => b ? Optional.Try(f) : Optional<T>.None;
 
     /// <summary>
     /// Creates an Optional by executing an Optional returning function if boolean value is true.

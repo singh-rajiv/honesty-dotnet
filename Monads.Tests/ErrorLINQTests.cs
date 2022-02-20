@@ -66,8 +66,8 @@ public class ErrorLINQTests
     public async Task Error_SelectAsync()
     {
         var sHello = "Hello";
-        string sNull = null;
-        async Task<int> AsyncCodeOf(string s) => await Task.Run(() => (int)Math.Sqrt(s.GetHashCode()));
+        string? sNull = null;
+        async Task<int> AsyncCodeOf(string? s) => await Task.Run(() => (int)Math.Sqrt(s!.GetHashCode()));
 
         var r1 = await
                  from errOrVal in Error.Try(AsyncCodeOf, sHello)
@@ -94,8 +94,8 @@ public class ErrorLINQTests
     {
         var sHello = "Hello";
         var sWorld = "World";
-        string sNull = null;
-        async Task<int> AsyncCodeOf(string s) => await Task.Run(() => (int)Math.Sqrt(s.GetHashCode()));
+        string? sNull = null;
+        async Task<int> AsyncCodeOf(string? s) => await Task.Run(() => (int)Math.Sqrt(s!.GetHashCode()));
 
         var r1 = await
                  from errOrVal1 in Error.Try(AsyncCodeOf, sHello)

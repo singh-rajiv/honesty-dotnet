@@ -42,8 +42,8 @@ public class OptionalTests
         object r4 = o4;
         object r5 = o5;
 
-        Optional<int> n1 = null;
-        object n2 = null;
+        Optional<int>? n1 = null;
+        object? n2 = null;
 
         Assert.False(o1.Equals(n1));
         Assert.False(o1.Equals(n2));
@@ -330,6 +330,7 @@ public class OptionalTests
         var o2 = await Optional.Try(SquareOf, int.MaxValue);
         var so1 = await o1.Bind(v => Optional.Try(SquareOf, v));
         var so2 = await o2.Bind(v => Optional.Try(SquareOf, v));
+        var so3 = await o1.Bind(v => Optional.Try(SquareOf, v * int.MaxValue));
 
         Assert.True(o1.IsSome);
         Assert.False(o2.IsSome);
@@ -337,6 +338,7 @@ public class OptionalTests
         Assert.True(so1.IsSome);
         Assert.Equal(625, so1.Value);
         Assert.False(so2.IsSome);
+        Assert.False(so3.IsSome);
     }
 
     [Fact]
@@ -357,7 +359,7 @@ public class OptionalTests
         var o4 = Optional.Try(InvalidOp);
         var o5 = Optional.Try((s) => s.Length, "Test");
         var o6 = Optional.Try((s) => s.Length, string.Empty);
-        var o7 = Optional.Try((string s) => s.Length, null);
+        var o7 = Optional.Try((string? s) => s!.Length, null); //force NullReferenceException
 
         Assert.True(o3.IsSome);
         Assert.Equal(5, o3.Value);
@@ -372,12 +374,12 @@ public class OptionalTests
     [Fact]
     public async Task Optional_TryAsync()
     {
-        static Task<int> Process(string s) => Task.Run(() => s.Length);
+        static Task<int> Process(string? s) => Task.Run(() => s!.Length); //force NullReferenceException
         var o1 = await Optional.Try(() => Task.FromResult(5));
         var o2 = await Optional.Try(() => Task.Run(() => (new[] { 10 })[2]));
         var o3 = await Optional.Try(Process, "Test");
         var o4 = await Optional.Try(Process, string.Empty);
-        var o5 = await Optional.Try<string, int>(Process, null);
+        var o5 = await Optional.Try<string?, int>(Process, null);
 
         Assert.True(o1.IsSome);
         Assert.Equal(5, o1.Value);

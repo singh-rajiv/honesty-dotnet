@@ -9,11 +9,12 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// <summary>
     /// Returns the value stored inside the monad. The value is default(T) if not present. 
     /// </summary>
-    public T Value { get; } = default;
+    public T? Value { get; } = default;
 
     /// <summary>
     /// Returns true if value is present or false otherwise.
     /// </summary>
+    [MemberNotNullWhen(true, nameof(Value))]
     public bool IsSome { get; }
 
     /// <summary>
@@ -25,23 +26,16 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// Creates an instance of Optional monad.
     /// </summary>
     /// <param name="value">Value to store inside the instance. If value is null then IsSome is set to false, otherwise it is set to true.</param>
-    public Optional(T value)
-    {
-        Value = value;
-        IsSome = value != null;
-    }
+    public Optional(T? value) => (IsSome, Value) = (value != null, value);
 
-    private Optional()
-    {
-        IsSome = false;
-    }
+    private Optional() => IsSome = false;
 
     /// <summary>
     /// Checks for equality with another Optional monad object.
     /// </summary>
     /// <param name="other">Other Optional monad object to compare this object with.</param>
     /// <returns>true if references are equal or both have IsSome false or both have IsSome true and raw values are also equal, false otherwise.</returns>
-    public bool Equals(Optional<T> other)
+    public bool Equals(Optional<T>? other)
     {
         if (other is null)
             return false;
@@ -57,7 +51,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// </summary>
     /// <param name="obj">Object to compare with.</param>
     /// <returns>false if obj is null or its type differs from this object's type. Then further as per Optional equality rules.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is null)
             return false;
@@ -83,8 +77,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// <param name="first">First Optional object.</param>
     /// <param name="second">Second Optional object.</param>
     /// <returns>true if objects are equal, false otherwise.</returns>
-    public static bool operator ==(Optional<T> first, Optional<T> second)
-        => Equals(first, second);
+    public static bool operator ==(Optional<T> first, Optional<T> second) => Equals(first, second);
 
     /// <summary>
     /// Checks if two Optional objects are unequal.
@@ -92,23 +85,19 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// <param name="first">First Optional object.</param>
     /// <param name="second">Second Optional object.</param>
     /// <returns>false if objects are equal, true otherwise.</returns>
-    public static bool operator !=(Optional<T> first, Optional<T> second)
-        => !Equals(first, second);
+    public static bool operator !=(Optional<T> first, Optional<T> second) => !Equals(first, second);
 
     /// <summary>
     /// Automatically converts a value to the Optional type during assignment or passing to a function call if the receiving variables is of Optional type.
     /// </summary>
     /// <param name="val">The value to amplify.</param>
-    public static implicit operator Optional<T>(T val) => new(val);
+    public static implicit operator Optional<T>(T? val) => new(val);
 
     /// <summary>
     /// Executes an action on Value, if present.
     /// </summary>
     /// <param name="whenSome">The action to execute.</param>
-    public void Match(Action<T> whenSome)
-    {
-        Match(whenSome, () => { });
-    }
+    public void Match(Action<T> whenSome) => Match(whenSome, () => { });
 
     /// <summary>
     /// Executes one of the given actions based on whether Value is present.
@@ -130,8 +119,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// <param name="whenSome">Func to execute on Value, if present.</param>
     /// <param name="whenNone">Func to execute when Value is not present.</param>
     /// <returns>The result of the func that gets executed.</returns>
-    public TResult Match<TResult>(Func<T, TResult> whenSome, Func<TResult> whenNone)
-        => IsSome ? whenSome(Value) : whenNone();
+    public TResult? Match<TResult>(Func<T, TResult?> whenSome, Func<TResult?> whenNone) => IsSome ? whenSome(Value) : whenNone();
 
     /// <summary>
     /// Executes an action on Value asynchronously, if Value is present.
@@ -141,8 +129,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// Task representing asynchronous completion of the given action. 
     /// A Task.CompletedTask is returned when Value is not present.
     /// </returns>
-    public async Task Match(Func<T, Task> whenSome)
-        => await Match(whenSome, () => Task.CompletedTask);
+    public async Task Match(Func<T, Task> whenSome) => await Match(whenSome, () => Task.CompletedTask);
 
     /// <summary>
     /// Executes one of the given actions asynchronously based on whether Value is present.
@@ -150,8 +137,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// <param name="whenSome">The asynchronous task returning func to execute on Value.</param>
     /// <param name="whenNone">The asynchronous task returning func to execute without using Value.</param>
     /// <returns>The task object representing completion of the action that gets executed.</returns>
-    public async Task Match(Func<T, Task> whenSome, Func<Task> whenNone)
-        => await (IsSome ? whenSome(Value) : whenNone());
+    public async Task Match(Func<T, Task> whenSome, Func<Task> whenNone) => await (IsSome ? whenSome(Value) : whenNone());
 
     /// <summary>
     /// Executes one of the given funcs asynchronously based on whether Value is present.
@@ -160,7 +146,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// <param name="whenSome">The asynchronous func to execute on Value.</param>
     /// <param name="whenNone">The asynchronous func to execute when Value is not present.</param>
     /// <returns>Task yielding the result on completion of the func that gets executed.</returns>
-    public async Task<TResult> Match<TResult>(Func<T, Task<TResult>> whenSome, Func<Task<TResult>> whenNone)
+    public async Task<TResult?> Match<TResult>(Func<T, Task<TResult?>> whenSome, Func<Task<TResult?>> whenNone) 
         => IsSome ? await whenSome(Value) : await whenNone();
 
     /// <summary>
@@ -172,8 +158,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// The result of the projection operation as an Optional.
     /// The Optional is None if Value is not present or the func is null or it throws.
     /// </returns>
-    public Optional<TResult> Map<TResult>(Func<T, TResult> f)
-        => IsSome ? Optional.Try(f, Value) : Optional<TResult>.None;
+    public Optional<TResult> Map<TResult>(Func<T, TResult?> f) => IsSome ? Optional.Try(f, Value) : Optional<TResult>.None;
 
     /// <summary>
     /// Projects the Value, if present, using the supplied asynchronous func.
@@ -184,7 +169,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// Task which yields the result on completion of the asynchronous projection operation as an Optional. 
     /// The Optional is None if Value is not present or the asynchronous operation is cancelled or the func is null or it throws.
     /// </returns>
-    public async Task<Optional<TResult>> Map<TResult>(Func<T, Task<TResult>> f)
+    public async Task<Optional<TResult>> Map<TResult>(Func<T, Task<TResult?>> f) 
         => IsSome ? await Optional.Try(f, Value) : Optional<TResult>.None;
 
     /// <summary>
@@ -197,7 +182,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// The result of the projection operation as an Optional.
     /// The Optional is None if Value is not present or the func is null or it throws.
     /// </returns>
-    public Optional<TResult> Bind<TResult>(Func<T, Optional<TResult>> f)
+    public Optional<TResult> Bind<TResult>(Func<T, Optional<TResult>> f) 
         => IsSome ? Optional.Try(f, Value).Flatten() : Optional<TResult>.None;
 
     /// <summary>
@@ -210,15 +195,26 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// The result of the projection operation as an Optional.
     /// The Optional is None if Value is not present or the task is cancelled or the func is null or it throws.
     /// </returns>
-    public async Task<Optional<TResult>> Bind<TResult>(Func<T, Task<Optional<TResult>>> f) =>
-        IsSome ? (await Optional.Try(f, Value)).Flatten() : Optional<TResult>.None;
+    public async Task<Optional<TResult>> Bind<TResult>(Func<T, Task<Optional<TResult>>> f) 
+    {
+        if (IsSome)
+        {
+            try
+            {
+                return await f(Value);
+            }
+            catch
+            { }
+        }
+        return Optional<TResult>.None;
+    }
 
     /// <summary>
     /// Executes a predicate on the Value if present.
     /// </summary>
     /// <param name="predicate">Filter condition to execute.</param>
     /// <returns>Same instance of the Optional if Value meets the filter condition, None otherwise.</returns>
-    public Optional<T> Where(Func<T, bool> predicate)
+    public Optional<T> Where(Func<T, bool> predicate) 
         => IsSome && Optional.Try(predicate, Value).Match(v => v, () => false) ? this : None;
 
     /// <summary>
@@ -226,7 +222,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// </summary>
     /// <param name="predicate">Asynchronous filter condition to execute.</param>
     /// <returns>Task yielding same instance of this Optional if Value meets the filter condition, None otherwise.</returns>
-    public async Task<Optional<T>> Where(Func<T, Task<bool>> predicate)
+    public async Task<Optional<T>> Where(Func<T, Task<bool>> predicate) 
         => IsSome && (await Optional.Try(predicate, Value)).Match(v => v, () => false) ? this : None;
 
     /// <summary>
@@ -244,7 +240,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// Same instance of this Optional if it contains a value. Otherwise an Optional containing the result of func evaluation.
     /// If the func is null or throws an exception then the Optional contains None.
     /// </returns>
-    public Optional<T> DefaultIfNone(Func<T> f) => IsSome ? this : Optional.Try(f);
+    public Optional<T> DefaultIfNone(Func<T?> f) => IsSome ? this : Optional.Try(f);
 
     /// <summary>
     /// Defaults an Optional to contain the result of the specified func evaluation lazily and asynchronously.
@@ -255,8 +251,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// Otherwise a Task yielding Optional containing the result of func evaluation.
     /// The Optional is None if the task is cancelled or the func is null or it throws.
     /// </returns>
-    public async Task<Optional<T>> DefaultIfNone(Func<Task<T>> f)
-        => IsSome ? this : await Optional.Try(f);
+    public async Task<Optional<T>> DefaultIfNone(Func<Task<T?>> f) => IsSome ? this : await Optional.Try(f);
 }
 
 /// <summary>
@@ -270,7 +265,7 @@ public static class Optional
     /// <typeparam name="T">Type of value.</typeparam>
     /// <param name="value">Value to be amplified.</param>
     /// <returns>An Optional containing value.</returns>
-    public static Optional<T> Some<T>(T value) => value;
+    public static Optional<T> Some<T>(T? value) => value;
 
     /// <summary>
     /// Creates an empty Optional.
@@ -278,7 +273,7 @@ public static class Optional
     /// <typeparam name="T">Type of value.</typeparam>
     /// <param name="_">The param value is ignored.</param>
     /// <returns>An empty Optional of type T.</returns>
-    public static Optional<T> None<T>(T _) => Optional<T>.None;
+    public static Optional<T> None<T>(T? _) => Optional<T>.None;
 
     /// <summary>
     /// Amplifies the result of a function call to an Optional. The function is executed inside a try/catch block.
@@ -289,7 +284,7 @@ public static class Optional
     /// Optional containing the result on successful execution or None if function is null or it throws an exception.
     /// The exception information is lost. Use Error.Try and Error monad if exception information is required.
     /// </returns>
-    public static Optional<T> Try<T>(Func<T> f)
+    public static Optional<T> Try<T>(Func<T?> f)
     {
         try
         {
@@ -313,7 +308,7 @@ public static class Optional
     /// Awaiting the returned task is guaranteed to not fail even if the original task is faulted or cancelled.
     /// The exception information is lost. Use Error.Try and Error monad if exception information is required.
     /// </returns>
-    public static async Task<Optional<T>> Try<T>(Func<Task<T>> f)
+    public static async Task<Optional<T>> Try<T>(Func<Task<T?>> f)
     {
         try
         {
@@ -336,7 +331,7 @@ public static class Optional
     /// Optional containing the result on successful execution or None if function is null or it throws an exception.
     /// The exception information is lost. Use Error.Try and Error monad if exception information is required.
     /// </returns>
-    public static Optional<T2> Try<T1, T2>(Func<T1, T2> f, T1 val) => Try(() => f(val));
+    public static Optional<T2> Try<T1, T2>(Func<T1, T2?> f, T1 val) => Try(() => f(val));
 
     /// <summary>
     /// Amplifies the result of an asynchronous function call on given value to an Optional. 
@@ -352,5 +347,5 @@ public static class Optional
     /// Awaiting the returned task is guaranteed to not fail even if the original task is faulted or cancelled.
     /// The exception information is lost. Use Error.Try and Error monad if exception information is required.
     /// </returns>
-    public static async Task<Optional<T2>> Try<T1, T2>(Func<T1, Task<T2>> f, T1 val) => await Try(() => f(val));
+    public static async Task<Optional<T2>> Try<T1, T2>(Func<T1, Task<T2?>> f, T1 val) => await Try(() => f(val));
 }

@@ -35,7 +35,7 @@ public class ErrorExtensionsTests
 
         var e1 = ee1.Flatten();
         Assert.True(e1.IsValue);
-        Assert.Equal(ee1.Value.GetType(), e1.GetType());
+        Assert.Equal( e1.GetType(), ee1.Value?.GetType());
         Assert.Equal(10, e1.Value);
 
         var e2 = ee2.Flatten();
