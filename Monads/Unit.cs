@@ -1,7 +1,7 @@
 namespace Monads;
 
 /// <summary>
-/// Type in FP that represents absense of a specific value. Resembles the void type in OOP.
+/// Type in FP that represents absense of a return type in a method. Resembles the void return type in OOP.
 /// </summary>
 public struct Unit
 {

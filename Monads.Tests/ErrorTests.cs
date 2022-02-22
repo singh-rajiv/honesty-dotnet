@@ -1,17 +1,17 @@
 namespace Monads.Tests;
 
-public class ErrorTests
+public class ResultTests
 {
     [Fact]
-    public void Error_Ctor()
+    public void Result_Ctor()
     {
         var emptyString = string.Empty;
         string? nullString = null;
         var ex = new Exception("Something happened");
-        var e1 = new Error<int>(5);
-        var e2 = new Error<int>(ex);
-        var e3 = new Error<string>(emptyString);
-        var e4 = new Error<string>(nullString);
+        var e1 = new Result<int>(5);
+        var e2 = new Result<int>(ex);
+        var e3 = new Result<string>(emptyString);
+        var e4 = new Result<string>(nullString);
 
         Assert.True(e1.IsValue);
         Assert.Null(e1.Exception);
@@ -25,11 +25,11 @@ public class ErrorTests
     }
 
     [Fact]
-    public void Error_MatchAction()
+    public void Result_MatchAction()
     {
         var ex = new Exception("Something happened");
-        var e1 = new Error<string>("HelloWorld");
-        var e2 = new Error<string>(ex);
+        var e1 = new Result<string>("HelloWorld");
+        var e2 = new Result<string>(ex);
 
         bool whenValueCalled;
         bool whenExCalled;
@@ -69,11 +69,11 @@ public class ErrorTests
     }
 
     [Fact]
-    public async Task Error_MatchActionAsync()
+    public async Task Result_MatchActionAsync()
     {
         var ex = new Exception("Something happened");
-        var e1 = new Error<string>("HelloWorld");
-        var e2 = new Error<string>(ex);
+        var e1 = new Result<string>("HelloWorld");
+        var e2 = new Result<string>(ex);
 
         bool whenValueCalled;
         bool whenExCalled;
@@ -113,11 +113,11 @@ public class ErrorTests
     }
 
     [Fact]
-    public void Error_MatchFunc()
+    public void Result_MatchFunc()
     {
         var ex = new Exception("Something happened");
-        var e1 = new Error<string>("HelloWorld");
-        var e2 = new Error<string>(ex);
+        var e1 = new Result<string>("HelloWorld");
+        var e2 = new Result<string>(ex);
 
         int whenValue(string s) => s.Length;
         int whenEx(Exception ex) => ex.Message.Length;
@@ -130,11 +130,11 @@ public class ErrorTests
     }
 
     [Fact]
-    public async Task Error_MatchFuncAsync()
+    public async Task Result_MatchFuncAsync()
     {
         var ex = new Exception("Something happened");
-        var e1 = new Error<string>("HelloWorld");
-        var e2 = new Error<string>(ex);
+        var e1 = new Result<string>("HelloWorld");
+        var e2 = new Result<string>(ex);
 
         Task<int> whenValue(string s) => Task.Run(() => s.Length);
         Task<int> whenEx(Exception ex) => Task.Run(() => ex.Message.Length);
@@ -147,11 +147,11 @@ public class ErrorTests
     }
 
     [Fact]
-    public void Error_Map()
+    public void Result_Map()
     {
         var ex = new Exception("Something happened");
-        var e1 = new Error<string>("HelloWorld");
-        var e2 = new Error<string>(ex);
+        var e1 = new Result<string>("HelloWorld");
+        var e2 = new Result<string>(ex);
         static int StrLen(string s) => s.Length;
         int StrThrow(string s) => throw ex;
 
@@ -171,11 +171,11 @@ public class ErrorTests
     }
 
     [Fact]
-    public async Task Error_MapAsync()
+    public async Task Result_MapAsync()
     {
         var ex = new Exception("Something happened");
-        var e1 = new Error<string>("HelloWorld");
-        var e2 = new Error<string>(ex);
+        var e1 = new Result<string>("HelloWorld");
+        var e2 = new Result<string>(ex);
         static Task<int> StrLen(string s) => Task.Run(() => s.Length);
         int StrThrow(string s) => throw ex;
 
@@ -195,12 +195,12 @@ public class ErrorTests
     }
 
     [Fact]
-    public void Error_Bind()
+    public void Result_Bind()
     {
         var ex = new Exception("Something happened");
-        var e1 = new Error<string>("HelloWorld");
-        var e2 = new Error<string>(ex);
-        static Error<int> StrLen(string s) => new(s.Length);
+        var e1 = new Result<string>("HelloWorld");
+        var e2 = new Result<string>(ex);
+        static Result<int> StrLen(string s) => new(s.Length);
 
         var r1 = e1.Bind(StrLen);
         var r2 = e2.Bind(StrLen);
@@ -212,17 +212,17 @@ public class ErrorTests
     }
 
     [Fact]
-    public async Task Error_BindAsync()
+    public async Task Result_BindAsync()
     {
         var ex = new Exception("Something happened");
-        var e1 = new Error<string>("HelloWorld");
-        var e2 = new Error<string>(ex);
-        static Task<Error<int>> StrLen(string s) => Task.Run(() => new Error<int>(s.Length));
+        var e1 = new Result<string>("HelloWorld");
+        var e2 = new Result<string>(ex);
+        static Task<Result<int>> StrLen(string s) => Task.Run(() => new Result<int>(s.Length));
 
         var r1 = await e1.Bind(StrLen);
         var r2 = await e2.Bind(StrLen);
-        var r3 = await e1.Bind(v => Task.FromException<Error<int>>(ex));
-        var r4 = await e2.Bind(v => Task.FromException<Error<int>>(ex));
+        var r3 = await e1.Bind(v => Task.FromException<Result<int>>(ex));
+        var r4 = await e2.Bind(v => Task.FromException<Result<int>>(ex));
 
         Assert.True(r1.IsValue);
         Assert.Equal("HelloWorld".Length, r1.Value);
@@ -235,12 +235,12 @@ public class ErrorTests
     }
 
     [Fact]
-    public async Task Error_DefaultIfError()
+    public async Task Result_DefaultIfException()
     {
         var defaultVal = 1;
         var ex = new Exception("Something happened");
-        var e1 = new Error<int>(5);
-        var e2 = new Error<int>(ex);
+        var e1 = new Result<int>(5);
+        var e2 = new Result<int>(ex);
         int DefaultThrow() => throw ex;
 
         var r1 = e1.DefaultIfException(defaultVal);
@@ -273,11 +273,11 @@ public class ErrorTests
     }
 
     [Fact]
-    public void Error_Static()
+    public void Result_Static()
     {
         var ex = new Exception("Something happened");
-        var e1 = Error.Value(10);
-        var e2 = Error.Exception<int>(ex);
+        var e1 = Result.Value(10);
+        var e2 = Result.Exception<int>(ex);
 
         Assert.True(e1.IsValue);
         Assert.Equal(10, e1.Value);
@@ -285,16 +285,16 @@ public class ErrorTests
     }
 
     [Fact]
-    public void Error_Try()
+    public void Result_Try()
     {
         static int InvalidOp() => (new[] { 10 })[2];
         static int LengthOf(string? s) => s!.Length;
 
-        var e1 = Error.Try(() => 10);
-        var e2 = Error.Try(InvalidOp);
-        var e3 = Error.Try(LengthOf, "Hello");
-        var e4 = Error.Try(LengthOf, "");
-        var e5 = Error.Try<string?, int>(LengthOf, null);
+        var e1 = Result.Try(() => 10);
+        var e2 = Result.Try(InvalidOp);
+        var e3 = Result.Try(LengthOf, "Hello");
+        var e4 = Result.Try(LengthOf, "");
+        var e5 = Result.Try<string?, int>(LengthOf, null);
 
         Assert.True(e1.IsValue);
         Assert.Equal(10, e1.Value);
@@ -308,15 +308,15 @@ public class ErrorTests
     }
 
     [Fact]
-    public async Task Error_TryAsync()
+    public async Task Result_TryAsync()
     {
         static Task<int> InvalidOp() => Task.Run(() => (new[] { 10 })[2]);
         static Task<int> LengthOf(string? s) => Task.Run(() => s!.Length);
-        var e1 = await Error.Try(() => Task.FromResult(10));
-        var e2 = await Error.Try(InvalidOp);
-        var e3 = await Error.Try(LengthOf, "Hello");
-        var e4 = await Error.Try(LengthOf, "");
-        var e5 = await Error.Try<string?, int>(LengthOf, null);
+        var e1 = await Result.Try(() => Task.FromResult(10));
+        var e2 = await Result.Try(InvalidOp);
+        var e3 = await Result.Try(LengthOf, "Hello");
+        var e4 = await Result.Try(LengthOf, "");
+        var e5 = await Result.Try<string?, int>(LengthOf, null);
 
         Assert.True(e1.IsValue);
         Assert.Equal(10, e1.Value);

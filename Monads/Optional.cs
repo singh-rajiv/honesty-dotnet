@@ -282,7 +282,7 @@ public static class Optional
     /// <param name="f">Function to execute.</param>
     /// <returns>
     /// Optional containing the result on successful execution or None if function is null or it throws an exception.
-    /// The exception information is lost. Use Error.Try and Error monad if exception information is required.
+    /// The exception information is lost. Use Result.Try and Result monad if exception information is required.
     /// </returns>
     public static Optional<T> Try<T>(Func<T?> f)
     {
@@ -306,7 +306,7 @@ public static class Optional
     /// A task which yields an Optional, containing the result on successful completion of the asynchronous operation, 
     /// or None if the operation fails or task is canceled.
     /// Awaiting the returned task is guaranteed to not fail even if the original task is faulted or cancelled.
-    /// The exception information is lost. Use Error.Try and Error monad if exception information is required.
+    /// The exception information is lost. Use Result.Try and Result monad if exception information is required.
     /// </returns>
     public static async Task<Optional<T>> Try<T>(Func<Task<T?>> f)
     {
@@ -329,7 +329,7 @@ public static class Optional
     /// <param name="val">Input parameter to the function.</param>
     /// <returns>
     /// Optional containing the result on successful execution or None if function is null or it throws an exception.
-    /// The exception information is lost. Use Error.Try and Error monad if exception information is required.
+    /// The exception information is lost. Use Result.Try and Result monad if exception information is required.
     /// </returns>
     public static Optional<T2> Try<T1, T2>(Func<T1, T2?> f, T1 val) => Try(() => f(val));
 
@@ -345,7 +345,7 @@ public static class Optional
     /// A task which yields an Optional, containing the result on successful completion of the asynchronous operation, 
     /// or None if the operation fails or task is cancelled.
     /// Awaiting the returned task is guaranteed to not fail even if the original task is faulted or cancelled.
-    /// The exception information is lost. Use Error.Try and Error monad if exception information is required.
+    /// The exception information is lost. Use Result.Try and Result monad if exception information is required.
     /// </returns>
     public static async Task<Optional<T2>> Try<T1, T2>(Func<T1, Task<T2?>> f, T1 val) => await Try(() => f(val));
 }

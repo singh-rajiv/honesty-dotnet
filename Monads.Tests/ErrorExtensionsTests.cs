@@ -1,9 +1,9 @@
 namespace Monads.Tests;
 
-public class ErrorExtensionsTests
+public class ResultExtensionsTests
 {
     [Fact]
-    public void Error_ToError()
+    public void Result_ToResult()
     {
         var ex = new Exception("Something happened");
         var i = 5;
@@ -11,11 +11,11 @@ public class ErrorExtensionsTests
         var o1 = Optional.Some(10);
         var o2 = Optional<int>.None;
 
-        var e1 = i.ToError();
-        var e2 = s.ToError();
-        var e3 = ex.ToError<int>();
-        var e4 = o1.ToError(ex);
-        var e5 = o2.ToError(ex);
+        var e1 = i.ToResult();
+        var e2 = s.ToResult();
+        var e3 = ex.ToResult<int>();
+        var e4 = o1.ToResult(ex);
+        var e5 = o2.ToResult(ex);
 
         Assert.True(e1.IsValue);
         Assert.True(e2.IsValue);
@@ -27,11 +27,11 @@ public class ErrorExtensionsTests
     }
 
     [Fact]
-    public void Error_Flatten()
+    public void Result_Flatten()
     {
         var ex = new Exception("Something happened.");
-        var ee1 = Error.Value(Error.Value(10));
-        var ee2 = Error.Exception<Error<int>>(ex);
+        var ee1 = Result.Value(Result.Value(10));
+        var ee2 = Result.Exception<Result<int>>(ex);
 
         var e1 = ee1.Flatten();
         Assert.True(e1.IsValue);
