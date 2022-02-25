@@ -90,44 +90,31 @@ public class OptionalTests
         bool whenNoneCalled;
         string input;
 
-        void Reset()
-        {
-            whenSomeCalled = false;
-            whenNoneCalled = false;
-            input = string.Empty;
-        }
+        void Reset() =>
+            (whenSomeCalled, whenNoneCalled, input) = (false, false, string.Empty);
 
-        void whenSome(string s)
-        {
-            input = s;
-            whenSomeCalled = true;
-        }
+        void whenSome(string s) =>
+            (input, whenSomeCalled) = (s, true);
 
-        void whenNone()
-        {
+        void whenNone() => 
             whenNoneCalled = true;
-        }
+
+        var someAction = whenSome;
+        var noneAction = whenNone;
 
         Reset();
-        o1.Match(whenSome, whenNone);
+        var u = o1.Match(someAction.ToFunc(), noneAction.ToFunc());
+        Assert.Equal(Unit.Instance, u);
         Assert.True(whenSomeCalled);
         Assert.False(whenNoneCalled);
         Assert.Equal(o1.Value, input);
 
         Reset();
-        o2.Match(whenSome, whenNone);
+        u = o2.Match(someAction.ToFunc(), noneAction.ToFunc());
+        Assert.Equal(Unit.Instance, u);
         Assert.False(whenSomeCalled);
         Assert.True(whenNoneCalled);
         Assert.Equal(string.Empty, input);
-
-        Reset();
-        o1.Match(whenSome);
-        Assert.True(whenSomeCalled);
-        Assert.Equal(o1.Value, input);
-
-        Reset();
-        o2.Match(whenSome);
-        Assert.False(whenSomeCalled);
     }
 
     [Fact]
@@ -154,48 +141,35 @@ public class OptionalTests
         var o1 = new Optional<string>("Test");
         var o2 = new Optional<string>(null);
 
-        bool whenSomeExecuted;
-        bool whenNoneExecuted;
+        bool whenSomeCalled;
+        bool whenNoneCalled;
         string input;
 
-        void Reset()
-        {
-            whenSomeExecuted = false;
-            whenNoneExecuted = false;
-            input = string.Empty;
-        }
+        void Reset() =>
+            (whenSomeCalled, whenNoneCalled, input) = (false, false, string.Empty);
 
-        Task whenSome(string s) => Task.Run(() =>
-        {
-            input = s;
-            whenSomeExecuted = true;
-        });
+        void whenSome(string s) =>
+            (input, whenSomeCalled) = (s, true);
 
-        Task whenNone() => Task.Run(() =>
-        {
-            whenNoneExecuted = true;
-        });
+        void whenNone() => 
+            whenNoneCalled = true;
+
+        var someAction = whenSome;
+        var noneAction = whenNone;
 
         Reset();
-        await o1.Match(whenSome, whenNone);
-        Assert.True(whenSomeExecuted);
-        Assert.False(whenNoneExecuted);
+        var u = await o1.Match(someAction.ToFuncAsync(), noneAction.ToFuncAsync());
+        Assert.Equal(Unit.Instance, u);
+        Assert.True(whenSomeCalled);
+        Assert.False(whenNoneCalled);
         Assert.Equal(o1.Value, input);
 
         Reset();
-        await o2.Match(whenSome, whenNone);
-        Assert.False(whenSomeExecuted);
-        Assert.True(whenNoneExecuted);
+        u = await o2.Match(someAction.ToFuncAsync(), noneAction.ToFuncAsync());
+        Assert.Equal(Unit.Instance, u);
+        Assert.False(whenSomeCalled);
+        Assert.True(whenNoneCalled);
         Assert.Equal(string.Empty, input);
-
-        Reset();
-        await o1.Match(whenSome);
-        Assert.True(whenSomeExecuted);
-        Assert.Equal(o1.Value, input);
-
-        Reset();
-        await o2.Match(whenSome);
-        Assert.False(whenSomeExecuted);
     }
 
     [Fact]
@@ -296,13 +270,8 @@ public class OptionalTests
     [Fact]
     public void Optional_Bind()
     {
-        static int SquareOf(int x)
-        {
-            checked
-            {
-                return x * x;
-            }
-        }
+        static int SquareOf(int x) => checked(x * x);
+
         var o1 = Optional.Try(SquareOf, 5);
         var o2 = Optional.Try(SquareOf, int.MaxValue);
         var so1 = o1.Bind(v => Optional.Try(SquareOf, v));
@@ -319,13 +288,8 @@ public class OptionalTests
     [Fact]
     public async Task Optional_BindAsync()
     {
-        static Task<int> SquareOf(int x)
-        {
-            checked
-            {
-                return Task.Run(() => x * x);
-            }
-        }
+        static Task<int> SquareOf(int x) => checked(Task.Run(() => x * x));
+
         var o1 = await Optional.Try(SquareOf, 5);
         var o2 = await Optional.Try(SquareOf, int.MaxValue);
         var so1 = await o1.Bind(v => Optional.Try(SquareOf, v));

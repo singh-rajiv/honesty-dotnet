@@ -94,25 +94,6 @@ public class Optional<T> : IEquatable<Optional<T>>
     public static implicit operator Optional<T>(T? val) => new(val);
 
     /// <summary>
-    /// Executes an action on Value, if present.
-    /// </summary>
-    /// <param name="whenSome">The action to execute.</param>
-    public void Match(Action<T> whenSome) => Match(whenSome, () => { });
-
-    /// <summary>
-    /// Executes one of the given actions based on whether Value is present.
-    /// </summary>
-    /// <param name="whenSome">Action to execute on Value, if present.</param>
-    /// <param name="whenNone">Action to execute when Value is not present.</param>
-    public void Match(Action<T> whenSome, Action whenNone)
-    {
-        if (IsSome)
-            whenSome(Value);
-        else
-            whenNone();
-    }
-
-    /// <summary>
     /// Executes one of the given funcs based on whether Value is present.
     /// </summary>
     /// <typeparam name="TResult">The funcs' return type.</typeparam>
@@ -122,31 +103,13 @@ public class Optional<T> : IEquatable<Optional<T>>
     public TResult? Match<TResult>(Func<T, TResult?> whenSome, Func<TResult?> whenNone) => IsSome ? whenSome(Value) : whenNone();
 
     /// <summary>
-    /// Executes an action on Value asynchronously, if Value is present.
-    /// </summary>
-    /// <param name="whenSome">Asynchronous action to execute on Value, if present.</param>
-    /// <returns>
-    /// Task representing asynchronous completion of the given action. 
-    /// A Task.CompletedTask is returned when Value is not present.
-    /// </returns>
-    public async Task Match(Func<T, Task> whenSome) => await Match(whenSome, () => Task.CompletedTask);
-
-    /// <summary>
-    /// Executes one of the given actions asynchronously based on whether Value is present.
-    /// </summary>
-    /// <param name="whenSome">The asynchronous task returning func to execute on Value.</param>
-    /// <param name="whenNone">The asynchronous task returning func to execute without using Value.</param>
-    /// <returns>The task object representing completion of the action that gets executed.</returns>
-    public async Task Match(Func<T, Task> whenSome, Func<Task> whenNone) => await (IsSome ? whenSome(Value) : whenNone());
-
-    /// <summary>
     /// Executes one of the given funcs asynchronously based on whether Value is present.
     /// </summary>
     /// <typeparam name="TResult">Return type of the result of the asynchronous func call.</typeparam>
     /// <param name="whenSome">The asynchronous func to execute on Value.</param>
     /// <param name="whenNone">The asynchronous func to execute when Value is not present.</param>
     /// <returns>Task yielding the result on completion of the func that gets executed.</returns>
-    public async Task<TResult?> Match<TResult>(Func<T, Task<TResult?>> whenSome, Func<Task<TResult?>> whenNone) 
+    public async Task<TResult> Match<TResult>(Func<T, Task<TResult>> whenSome, Func<Task<TResult>> whenNone) 
         => IsSome ? await whenSome(Value) : await whenNone();
 
     /// <summary>

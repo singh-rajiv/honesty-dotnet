@@ -30,21 +30,21 @@ public class ResultLINQTests
         var h = "Hello ";
         var w = "World!";
         var ex = new Exception("Something happened");
-        var e1 = Result.Value(h);
-        var e2 = Result.Value(w);
-        var e3 = Result.Exception<string>(ex);
+        var r1 = Result.Value(h);
+        var r2 = Result.Value(w);
+        var r3 = Result.Exception<string>(ex);
 
-        var e4 = from s1 in e1
-                 from s2 in e2
+        var r4 = from s1 in r1
+                 from s2 in r2
                  select s1 + s2;
 
-        var e5 = from s1 in e1
-                 from s3 in e3
+        var r5 = from s1 in r1
+                 from s3 in r3
                  select s1 + s3;
 
-        var e6 = from s3 in e3
-                 from s2 in e2
-                 from s1 in e1
+        var r6 = from s3 in r3
+                 from s2 in r2
+                 from s1 in r1
                  select s1 + s2 + s3;
 
         var e7 = from x in Result.Value(5)
@@ -52,12 +52,12 @@ public class ResultLINQTests
                  from z in Result.Value(15)
                  select x + y + z;
 
-        Assert.True(e4.IsValue);
-        Assert.Equal(h + w, e4.Value);
-        Assert.False(e5.IsValue);
-        Assert.Equal(ex, e5.Exception);
-        Assert.False(e6.IsValue);
-        Assert.Equal(ex, e6.Exception);
+        Assert.True(r4.IsValue);
+        Assert.Equal(h + w, r4.Value);
+        Assert.False(r5.IsValue);
+        Assert.Equal(ex, r5.Exception);
+        Assert.False(r6.IsValue);
+        Assert.Equal(ex, r6.Exception);
         Assert.True(e7.IsValue);
         Assert.Equal(30, e7.Value);
     }
@@ -70,19 +70,19 @@ public class ResultLINQTests
         async Task<int> AsyncCodeOf(string? s) => await Task.Run(() => (int)Math.Sqrt(s!.GetHashCode()));
 
         var r1 = await
-                 from errOrVal in Result.Try(AsyncCodeOf, sHello)
+                 from exOrVal in Result.Try(AsyncCodeOf, sHello)
                  select
                  (
-                     from val in errOrVal
+                     from val in exOrVal
                      select val * val
                  );
         Assert.True(r1.IsValue);
 
         var r2 = await
-                 from errOrVal in Result.Try(AsyncCodeOf, sNull)
+                 from exOrVal in Result.Try(AsyncCodeOf, sNull)
                  select
                  (
-                     from val in errOrVal
+                     from val in exOrVal
                      select val * val
                  );
         Assert.False(r2.IsValue);
@@ -98,27 +98,27 @@ public class ResultLINQTests
         async Task<int> AsyncCodeOf(string? s) => await Task.Run(() => (int)Math.Sqrt(s!.GetHashCode()));
 
         var r1 = await
-                 from errOrVal1 in Result.Try(AsyncCodeOf, sHello)
-                 from errOrVal2 in Result.Try(AsyncCodeOf, sWorld)
-                 from errOrVal3 in Result.Try(AsyncCodeOf, sHello + sWorld)
+                 from exOrVal1 in Result.Try(AsyncCodeOf, sHello)
+                 from exOrVal2 in Result.Try(AsyncCodeOf, sWorld)
+                 from exOrVal3 in Result.Try(AsyncCodeOf, sHello + sWorld)
                  select
                  (
-                     from val1 in errOrVal1
-                     from val2 in errOrVal2
-                     from val3 in errOrVal3
+                     from val1 in exOrVal1
+                     from val2 in exOrVal2
+                     from val3 in exOrVal3
                      select val1 + val2 + val3
                  );
         Assert.True(r1.IsValue);
 
         var r2 = await
-                 from errOrVal1 in Result.Try(AsyncCodeOf, sHello)
-                 from errOrVal2 in Result.Try(AsyncCodeOf, sNull)
-                 from errOrVal3 in Result.Try(AsyncCodeOf, sHello + sWorld)
+                 from exOrVal1 in Result.Try(AsyncCodeOf, sHello)
+                 from exOrVal2 in Result.Try(AsyncCodeOf, sNull)
+                 from exOrVal3 in Result.Try(AsyncCodeOf, sHello + sWorld)
                  select
                  (
-                     from val1 in errOrVal1
-                     from val2 in errOrVal2
-                     from val3 in errOrVal3
+                     from val1 in exOrVal1
+                     from val2 in exOrVal2
+                     from val3 in exOrVal3
                      select val1 + val2 + val3
                  );
         Assert.False(r2.IsValue);

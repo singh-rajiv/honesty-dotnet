@@ -36,33 +36,28 @@ public class ResultTests
         string? argStr;
         Exception argEx = new();
 
-        void Reset()
-        {
-            whenValueCalled = false;
-            whenExCalled = false;
-            argStr = null;
-        }
+        void Reset() =>
+            (whenValueCalled, whenExCalled, argStr) = (false, false, null);
 
-        void whenValue(string s)
-        {
-            argStr = s;
-            whenValueCalled = true;
-        }
+        void whenValue(string s) =>
+            (argStr, whenValueCalled) = (s, true);
 
-        void whenEx(Exception ex)
-        {
-            argEx = ex;
-            whenExCalled = true;
-        }
+        void whenEx(Exception ex) =>
+            (argEx, whenExCalled) = (ex, true);
+
+        var valAction = whenValue;
+        var exAction = whenEx;
 
         Reset();
-        e1.Match(whenValue, whenEx);
+        var u = e1.Match(valAction.ToFunc(), exAction.ToFunc());
+        Assert.Equal(Unit.Instance, u);
         Assert.True(whenValueCalled);
         Assert.False(whenExCalled);
         Assert.Equal("HelloWorld", argStr);
 
         Reset();
-        e2.Match(whenValue, whenEx);
+        u = e2.Match(valAction.ToFunc(), exAction.ToFunc());
+        Assert.Equal(Unit.Instance, u);
         Assert.False(whenValueCalled);
         Assert.True(whenExCalled);
         Assert.Equal(ex, argEx);
@@ -80,33 +75,28 @@ public class ResultTests
         string? argStr;
         Exception argEx = new();
 
-        void Reset()
-        {
-            whenValueCalled = false;
-            whenExCalled = false;
-            argStr = null;
-        }
+        void Reset() =>
+            (whenValueCalled, whenExCalled, argStr) = (false, false, null);
 
-        Task whenValue(string s) => Task.Run(() =>
-        {
-            argStr = s;
-            whenValueCalled = true;
-        });
+        void whenValue(string s) =>
+            (argStr, whenValueCalled) = (s, true);
 
-        Task whenEx(Exception ex) => Task.Run(() =>
-        {
-            argEx = ex;
-            whenExCalled = true;
-        });
+        void whenEx(Exception ex) =>
+            (argEx, whenExCalled) = (ex, true);
+
+        var valAction = whenValue;
+        var exAction = whenEx;
 
         Reset();
-        await e1.Match(whenValue, whenEx);
+        var u = await e1.Match(valAction.ToFuncAsync(), exAction.ToFuncAsync());
+        Assert.Equal(Unit.Instance, u);
         Assert.True(whenValueCalled);
         Assert.False(whenExCalled);
         Assert.Equal("HelloWorld", argStr);
 
         Reset();
-        await e2.Match(whenValue, whenEx);
+        u = await e2.Match(valAction.ToFuncAsync(), exAction.ToFuncAsync());
+        Assert.Equal(Unit.Instance, u);
         Assert.False(whenValueCalled);
         Assert.True(whenExCalled);
         Assert.Equal(ex, argEx);

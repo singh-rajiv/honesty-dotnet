@@ -42,28 +42,7 @@ public class Result<T>
     /// Creates an instance of Result monad containing Exception.
     /// </summary>
     /// <param name="ex">Exception to store inside the instance.</param>
-    public Result(Exception ex) => (Exception, IsValue) = (ex, false);
-
-    /// <summary>
-    /// Executes one of the given actions based on whether a value is present.
-    /// </summary>
-    /// <param name="whenValue">Action to execute on Value, if present.</param>
-    /// <param name="whenEx">Action to execute on Exception, if present.</param>
-    public void Match(Action<T> whenValue, Action<Exception> whenEx)
-    {
-        if (IsValue)
-            whenValue(Value);
-        else
-            whenEx(Exception);
-    }
-
-    /// <summary>
-    /// Executes one of the given actions asynchronously based on whether a value is present.
-    /// </summary>
-    /// <param name="whenValue">Asynchronous action to execute on Value, if present.</param>
-    /// <param name="whenEx">Asynchronous action to execute on Exception, if present.</param>
-    /// <returns>Task representing the asynchronous action that gets executed.</returns>
-    public async Task Match(Func<T, Task> whenValue, Func<Exception, Task> whenEx) => await (IsValue ? whenValue(Value) : whenEx(Exception));
+    public Result(Exception ex) => Exception = ex;
 
     /// <summary>
     /// Executes one of the given funcs based on whether a value is present and returns its result.
@@ -82,7 +61,7 @@ public class Result<T>
     /// <param name="whenValue">Asynchronous func to execute on Value, if present.</param>
     /// <param name="whenEx">Asynchronous func to execute on Exception, if present.</param>
     /// <returns>Task which will yield the result on completion.</returns>
-    public async Task<TResult?> Match<TResult>(Func<T, Task<TResult?>> whenValue, Func<Exception, Task<TResult?>> whenEx)
+    public async Task<TResult> Match<TResult>(Func<T, Task<TResult>> whenValue, Func<Exception, Task<TResult>> whenEx)
         => IsValue ? await whenValue(Value) : await whenEx(Exception);
 
     /// <summary>
