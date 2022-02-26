@@ -167,7 +167,9 @@ public class Optional<T> : IEquatable<Optional<T>>
                 return await f(Value);
             }
             catch
-            { }
+            {
+                return Optional<TResult>.None;
+            }
         }
         return Optional<TResult>.None;
     }

@@ -81,7 +81,7 @@ public class OptionalTests
     }
 
     [Fact]
-    public void Optional_MatchAction()
+    public void Optional_PatternMatch_Action()
     {
         var o1 = new Optional<string>("Test");
         var o2 = new Optional<string>(null);
@@ -118,7 +118,7 @@ public class OptionalTests
     }
 
     [Fact]
-    public void Optional_MatchFunc()
+    public void Optional_PatternMatch_Func()
     {
         var v1 = 10;
         var o1 = new Optional<int>(v1);
@@ -136,7 +136,7 @@ public class OptionalTests
     }
 
     [Fact]
-    public async Task Optional_MatchActionAsync()
+    public async Task Optional_PatternMatch_ActionAsync()
     {
         var o1 = new Optional<string>("Test");
         var o2 = new Optional<string>(null);
@@ -173,7 +173,7 @@ public class OptionalTests
     }
 
     [Fact]
-    public async Task Optional_MatchFuncAsync()
+    public async Task Optional_PatternMatch_FuncAsync()
     {
         var v1 = 10;
         var o1 = v1.ToOptional();
