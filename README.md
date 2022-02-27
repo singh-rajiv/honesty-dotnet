@@ -29,8 +29,8 @@ var quotient2 = Divide(100, 0); //throws DivideByZero exception, not pure behavi
 var TryDivide = (int n, int d) => Result.Try(() => Divide(n, d));   //is always honest
 
 //type of result1 & result2 is Result<int>
-var result1 = TryDivide(100, 5)); //result1 'contains' 20, pure behavior
-var result2 = TryDivide(100, 0)); //result2 'contains' exception, also pure behavior
+var result1 = TryDivide(100, 5); //result1 'contains' 20, pure behavior
+var result2 = TryDivide(100, 0); //result2 'contains' exception, also pure behavior
                                   //TryDivide will always return promised Result and not throw exception
 
 
@@ -43,7 +43,7 @@ var result2 = TryDivide(100, 0)); //result2 'contains' exception, also pure beha
 //otherwise it will contain exception from the faulting division operation
 //type of sum is Result<int>
 var sum = from q1 in TryDivide(n1, d1)  //use the new Func
-          from q2 in TryDivide(n2, d2)) //select clause executes only when the two divisions are successful
+          from q2 in TryDivide(n2, d2)  //select clause executes only when the two divisions are successful
           select q1 + q2;               //type of q1 and q2 in the LINQ query is int not Result<int>
 
 //sum could also be written using Method syntax
