@@ -133,7 +133,7 @@ string? sNull = null;
 
 //an arbitrary task that yields an int when run to succesful completion
 //by calculating some arbitrary tranformation on a given string
-async Task<int> AsyncCodeOf(string? i) => await Task.Run(() => { return (int) Math.Sqrt(i!.GetHashCode()); });
+async Task<int> AsyncCodeOf(string? i) => await Task.Run(() => (int)Math.Sqrt(i!.GetHashCode()));
 
 //honesty-dotnet enables using LINQ query syntax on Task type and this does not require any extra effort on developer's part
 //the return type of Optional.Try call below is Task<Optional<int>>
@@ -216,8 +216,7 @@ string? sNull = null;
 
 //an arbitrary task that yields an int when run to succesful completion
 //by calculating some arbitrary tranformation on a given string
-async Task<int> AsyncCodeOf(string? s) => await Task.Run(() 
-    => { return (int) Math.Sqrt(s!.GetHashCode()); });
+async Task<int> AsyncCodeOf(string? s) => await Task.Run(() => (int)Math.Sqrt(s!.GetHashCode()));
 
 //honesty-dotnet enables using LINQ query syntax on Task type and this does not require any extra effort on developer's part
 //the return type of Result.Try call below is Task<Result<int>>
