@@ -10,6 +10,8 @@ public class OptionalTests
         var o3 = new Optional<object>(null);
         var x = 100;
         Optional<int> o4 = x;
+        var o5 = new Optional<int>();
+        var o6 = new Optional<string>();
 
         Assert.True(o1.IsSome);
         Assert.True(o2.IsSome);
@@ -20,6 +22,8 @@ public class OptionalTests
         Assert.Null(o3.Value);
         Assert.Equal(o4.Value, x);
         Assert.Equal(o4, x);
+        Assert.False(o5.IsSome);
+        Assert.False(o6.IsSome);
     }
 
     [Fact]
@@ -78,6 +82,11 @@ public class OptionalTests
         Assert.True(o1 != o4);
         Assert.True(o2 != o5);
         Assert.True(o2 != o3);
+
+        Assert.Equal(Optional<int>.None, new Optional<int>());
+        Assert.True(Optional<int>.None == new Optional<int>());
+        Assert.Equal(Optional<string>.None, new Optional<string>());
+        Assert.True(Optional<string>.None == new Optional<string>());
     }
 
     [Fact]

@@ -4,7 +4,7 @@ namespace Monads;
 /// Represents an amplified type of T, Optional monad, in which a value may or may not be present.
 /// </summary>
 /// <typeparam name="T">The type of value.</typeparam>
-public class Optional<T> : IEquatable<Optional<T>>
+public readonly struct Optional<T> : IEquatable<Optional<T>>
 {
     /// <summary>
     /// Returns the value stored inside the monad. The value is default(T) if not present. 
@@ -28,42 +28,19 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// <param name="value">Value to store inside the instance. If value is null then IsSome is set to false, otherwise it is set to true.</param>
     public Optional(T? value) => (IsSome, Value) = (value != null, value);
 
-    private Optional() => IsSome = false;
-
     /// <summary>
     /// Checks for equality with another Optional monad object.
     /// </summary>
     /// <param name="other">Other Optional monad object to compare this object with.</param>
     /// <returns>true if references are equal or both have IsSome false or both have IsSome true and raw values are also equal, false otherwise.</returns>
-    public bool Equals(Optional<T>? other)
-    {
-        if (other is null)
-            return false;
-
-        if (ReferenceEquals(other, this) || !other.IsSome && !IsSome)
-            return true;
-
-        return other.IsSome == IsSome && EqualityComparer<T>.Default.Equals(other.Value, Value);
-    }
+    public bool Equals(Optional<T> other) => other.IsSome == IsSome && EqualityComparer<T>.Default.Equals(other.Value, Value);
 
     /// <summary>
     /// Checks for equality with an object.
     /// </summary>
     /// <param name="obj">Object to compare with.</param>
     /// <returns>false if obj is null or its type differs from this object's type. Then further as per Optional equality rules.</returns>
-    public override bool Equals(object? obj)
-    {
-        if (obj is null)
-            return false;
-
-        if (ReferenceEquals(obj, this))
-            return true;
-
-        if (obj.GetType() != GetType())
-            return false;
-
-        return Equals(obj as Optional<T>);
-    }
+    public override bool Equals(object? obj) => (obj is Optional<T> thisObj) && Equals(thisObj);
 
     /// <summary>
     /// Returns hashcode.
@@ -77,7 +54,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// <param name="first">First Optional object.</param>
     /// <param name="second">Second Optional object.</param>
     /// <returns>true if objects are equal, false otherwise.</returns>
-    public static bool operator ==(Optional<T> first, Optional<T> second) => Equals(first, second);
+    public static bool operator ==(Optional<T> first, Optional<T> second) => first.Equals(second);
 
     /// <summary>
     /// Checks if two Optional objects are unequal.
@@ -85,7 +62,7 @@ public class Optional<T> : IEquatable<Optional<T>>
     /// <param name="first">First Optional object.</param>
     /// <param name="second">Second Optional object.</param>
     /// <returns>false if objects are equal, true otherwise.</returns>
-    public static bool operator !=(Optional<T> first, Optional<T> second) => !Equals(first, second);
+    public static bool operator !=(Optional<T> first, Optional<T> second) => !first.Equals(second);
 
     /// <summary>
     /// Automatically converts a value to the Optional type during assignment or passing to a function call if the receiving variables is of Optional type.

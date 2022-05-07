@@ -32,7 +32,7 @@ public class OptionalExtensionsTests
 
         Assert.True(oo1.IsSome);
         Assert.True(o1.IsSome);
-        Assert.Equal(o1.GetType(), oo1.Value?.GetType());
+        Assert.Equal(o1.GetType(), oo1.Value.GetType());
         Assert.Equal(60, o1.Value);
 
         var o2 = oo2.Flatten();
