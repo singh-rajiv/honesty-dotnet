@@ -4,7 +4,7 @@ namespace Monads;
 /// Represents an amplified type of T, Result monad, in which an exception instead of a value may be present.
 /// </summary>
 /// <typeparam name="T">The type of value.</typeparam>
-public class Result<T>
+public readonly struct Result<T>
 {
     /// <summary>
     /// Gets the Exception. Returns null if there is a Value present.
@@ -30,9 +30,13 @@ public class Result<T>
     public Result(T? value)
     {
         if (value is null)
+        {
             Exception = new ArgumentNullException(nameof(value));
+            IsValue = false;
+        }
         else
         {
+            Exception = null;
             Value = value;
             IsValue = true;
         }
@@ -42,7 +46,16 @@ public class Result<T>
     /// Creates an instance of Result monad containing Exception.
     /// </summary>
     /// <param name="ex">Exception to store inside the instance.</param>
-    public Result(Exception ex) => Exception = ex;
+    public Result(Exception ex) => (Exception, IsValue) = (ex, false);
+
+    /// <summary>
+    /// Deconstructs this Result into a tuple.
+    /// </summary>
+    /// <param name="isValue">Returns true if Value is present, false if Exception is present.</param>
+    /// <param name="value">Returns the value stored inside the monad. The value is default(T) if there is an Exception present.</param>
+    /// <param name="exception">Gets the Exception. Returns null if there is a Value present.</param>
+    public void Deconstruct(out bool isValue, out T? value, out Exception? exception) =>
+        (isValue, value, exception) = (IsValue, Value, Exception);
 
     /// <summary>
     /// Executes one of the given funcs based on whether a value is present and returns its result.

@@ -27,6 +27,21 @@ public class OptionalTests
     }
 
     [Fact]
+    public void Optional_Deconstruct()
+    {
+        var o1 = Optional.Some("HelloWorld");
+        var o2 = Optional<string>.None;
+
+        var (isSome, value) = o1;
+        Assert.True(isSome);
+        Assert.Equal("HelloWorld", value);
+
+        (isSome, value) = o2;
+        Assert.False(isSome);
+        Assert.Equal(default, value);
+    }
+
+    [Fact]
     public void Optional_Equality()
     {
         var o1 = new Optional<int>(5);

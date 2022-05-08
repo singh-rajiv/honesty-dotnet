@@ -29,6 +29,13 @@ public readonly struct Optional<T> : IEquatable<Optional<T>>
     public Optional(T? value) => (IsSome, Value) = (value != null, value);
 
     /// <summary>
+    /// Deconstructs this Optional into a tuple.
+    /// </summary>
+    /// <param name="isSome">Returns true if value is present or false otherwise.</param>
+    /// <param name="value">Returns the value stored inside the monad. The value is default(T) if not present.</param>
+    public void Deconstruct(out bool isSome, out T? value) => (isSome, value) = (IsSome, Value);
+
+    /// <summary>
     /// Checks for equality with another Optional monad object.
     /// </summary>
     /// <param name="other">Other Optional monad object to compare this object with.</param>

@@ -25,6 +25,24 @@ public class ResultTests
     }
 
     [Fact]
+    public void Result_Deconstruct()
+    {
+        var ex = new Exception("something happened.");
+        var r1 = Result.Value("HelloWorld");
+        var r2 = Result.Exception<string>(ex);
+
+        var (isValue, value, exception) = r1;
+        Assert.True(isValue);
+        Assert.Equal("HelloWorld", value);
+        Assert.Null(exception);
+
+        (isValue, value, exception) = r2;
+        Assert.False(isValue);
+        Assert.Null(value);
+        Assert.Equal(ex, exception);
+    }
+
+    [Fact]
     public void Result_PatternMatch_Action()
     {
         var ex = new Exception("Something happened");

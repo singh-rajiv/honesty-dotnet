@@ -49,7 +49,7 @@ public class OptionalLINQTests
         var sHello = "Hello";
         string? sNull = null;
 
-        async Task<int> AsyncCodeOf(string? i) => await Task.Run(() => (int)Math.Sqrt(i!.GetHashCode()));
+        Task<int> AsyncCodeOf(string? i) => Task.Run(() => (int)Math.Sqrt(i!.GetHashCode()));
 
         var r1 = await
                  from maybeValue in Optional.Try(AsyncCodeOf, sHello)
@@ -77,7 +77,7 @@ public class OptionalLINQTests
         var sWorld = "World";
         string? sNull = null;
 
-        async Task<int> AsyncCodeOf(string? i) => await Task.Run(() => (int)Math.Sqrt(i!.GetHashCode()));
+        Task<int> AsyncCodeOf(string? i) => Task.Run(() => (int)Math.Sqrt(i!.GetHashCode()));
 
         var r1 = await
                  from maybeValue1 in Optional.Try(AsyncCodeOf, sHello)
@@ -104,5 +104,40 @@ public class OptionalLINQTests
                      select value1 + value2 + value3
                  );
         Assert.False(r2.IsSome);
+    }
+
+    [Fact]
+    public void Optional_Where()
+    {
+        var o1 = 5.ToOptional();
+        var o2 = from i in o1
+                 where i % 2 == 1
+                 select i;
+        var o3 = from i in o1
+                 where i % 2 == 0
+                 select i;
+
+        Assert.True(o2.IsSome);
+        Assert.False(o3.IsSome);
+
+        var o4 = Optional<int>.None;
+        var o5 = from i in o4
+                 where i % 2 == 1
+                 select i;
+        Assert.False(o5.IsSome);
+    }
+
+    [Fact]
+    public async Task Optional_WhereAsync()
+    {
+        Task<bool> AsyncPredicate(int i) => Task.Run(() => i % 2 == 1);
+
+        var o1 = 5.ToOptional();
+        var o2 = await
+                 from i in o1
+                 where AsyncPredicate(i)
+                 select i;
+
+        Assert.True(o2.IsSome);
     }
 }
