@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <PackageId>HonestyDotNet</PackageId>
-    <Version>0.7.7.0</Version>
+    <Version>0.7.7.1</Version>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -10,6 +10,10 @@
     <Copyright>Rajiv Singh, 2022</Copyright>
     <PackageDescription>Provides generic Optional and Result monads to aid Functional Programming in C#.</PackageDescription>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/singh-rajiv/honesty-dotnet</RepositoryUrl>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 </Project>
